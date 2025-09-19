@@ -1,13 +1,13 @@
-package com.dev.pernambucofre;
+package com.dev.pernambox;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class PernambucofreApplication {
+public class PernamboxApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(PernambucofreApplication.class, args);
+		SpringApplication.run(PernamboxApplication.class, args);
 	}
 
 }

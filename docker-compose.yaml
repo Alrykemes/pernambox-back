@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16
+    container_name: pernamboxDB
+    restart: always
+    ports:
+      - '5432:5432'
+    volumes:
+      - pernambox_pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRE_USER}
+      POSTGRES_PASSWORD: ${POSTGRE_PASSWORD}
+      POSTGRES_DB: ${POSTGRE_DB}
+volumes:
+  pernambox_pgdata:
