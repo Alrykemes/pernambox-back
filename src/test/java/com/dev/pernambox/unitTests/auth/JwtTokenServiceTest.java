@@ -1,4 +1,4 @@
-package com.dev.pernambox.auth;
+package com.dev.pernambox.unitTests.auth;
 
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.interfaces.Claim;
