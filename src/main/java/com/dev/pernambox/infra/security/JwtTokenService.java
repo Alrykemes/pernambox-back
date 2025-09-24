@@ -25,6 +25,8 @@ public class JwtTokenService {
     private Map<String, Object> payload = new HashMap<>();
 
     public String gerarToken(User user, String ip, String userAgent) {
+        if(user == null) throw new JWTCreationException("User not be a null", new Throwable());
+
         try {
             payload.put("userId", user.getId().toString());
             payload.put("email", user.getEmail());
@@ -58,12 +60,12 @@ public class JwtTokenService {
 
             if (!payload.get("ip").asString().equals(ip)) {
                 // guarda no log
-                throw new SecurityException();
+                throw new SecurityException("Ip de requisição diferente do token");
             }
 
             if (!payload.get("userAgent").asString().equals(userAgent)) {
                 // guarda no log
-                throw new SecurityException();
+                throw new SecurityException("User Agent de requisição diferente do token");
             }
 
             return payload;
