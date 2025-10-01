@@ -13,8 +13,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
-
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -27,14 +25,14 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto body, HttpServletRequest request) {
         User user = this.repository.findByEmail(body.email()).orElseThrow(() -> new RuntimeException("User not found"));
-        if (passwordEncoder.matches(body.senha(), user.getPassword())) {
-            String token = this.jwtTokenService.gerarToken(
+        if (passwordEncoder.matches(body.password(), user.getPassword())) {
+            String token = this.jwtTokenService.generateToken(
                     user,
                     RequestUtils.getRequestIp(request),
                     RequestUtils.getRequestUserAgent(request)
             );
 
-            return ResponseEntity.ok(new LoginResponseDto(user.getId(), user.getEmail(), user.getPermissao(), token));
+            return ResponseEntity.ok(new LoginResponseDto(user.getId(), user.getEmail(), user.getRole(), token));
         }
         return ResponseEntity.badRequest().build();
     }
@@ -49,7 +47,7 @@ public class AuthController {
         return ResponseEntity.ok(new LoginResponseDto(
                 user.getId(),
                 user.getEmail(),
-                user.getPermissao(),
+                user.getRole(),
                 request.getHeader("Authorization").toString().replace("Bearer ", "")));
     }
 }

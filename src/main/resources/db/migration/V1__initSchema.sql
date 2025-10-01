@@ -1,120 +1,123 @@
 -- Extensão para gerar UUIDs automaticamente
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE endereco
+CREATE TABLE address
 (
-    ID          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    NUMERO      INT NOT NULL,
-    RUA         VARCHAR(255) NOT NULL,
-    BAIRRO      VARCHAR(255) NOT NULL,
-    MUNICIPIO   VARCHAR(255) NOT NULL,
-    ESTADO      VARCHAR(255) NOT NULL,
-    CEP         VARCHAR(9),
-    COMPLEMENTO VARCHAR (255)
+    id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    number     INT          NOT NULL,
+    street     VARCHAR(255) NOT NULL,
+    district   VARCHAR(255) NOT NULL,
+    city       VARCHAR(255) NOT NULL,
+    state      VARCHAR(255) NOT NULL,
+    zip_code   CHAR(8)      NOT NULL,
+    complement VARCHAR(255)
 );
 
-CREATE TABLE polo
+CREATE TABLE unit
 (
-    ID              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    NOME            VARCHAR(150) NOT NULL,
-    FK_ENDERECO_ID  UUID NOT NULL,
-    CONSTRAINT      FK_ENDERECO_ID FOREIGN KEY (FK_ENDERECO_ID)
-    REFERENCES      endereco (ID) ON DELETE CASCADE
+    id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name       VARCHAR(150) NOT NULL,
+    address_id UUID         NOT NULL,
+    CONSTRAINT fk_unit_address_id FOREIGN KEY (address_id)
+        REFERENCES address (id) ON DELETE CASCADE
 );
 
-CREATE TYPE tipo_permissao AS ENUM ('ADM_GERAL','ADM_POLO','FUNCIONARIO');
+CREATE TYPE role_type AS ENUM ('MASTER_ADM','UNIT_ADM','USER');
 
-CREATE TABLE usuario
+CREATE TABLE users
 (
-    ID          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    NOME        VARCHAR(255) NOT NULL,
-    CPF         VARCHAR(14)  NOT NULL UNIQUE,
-    EMAIL       VARCHAR(255) NOT NULL UNIQUE,
-    TELEFONE    VARCHAR(14),
-    SENHA       VARCHAR(255) NOT NULL,
-    PERMISSAO   tipo_permissao NOT NULL DEFAULT 'FUNCIONARIO',
-    FK_POLO_ID  UUID NOT NULL,
-    CONSTRAINT  FK_POLO_ID FOREIGN KEY (FK_POLO_ID)
-    REFERENCES  polo (ID) ON DELETE CASCADE
+    id       UUID PRIMARY KEY      DEFAULT uuid_generate_v4(),
+    name     VARCHAR(255) NOT NULL,
+    cpf      CHAR(11)     NOT NULL UNIQUE,
+    email    VARCHAR(255) NOT NULL UNIQUE,
+    phone    VARCHAR(14) UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role     role_type    NOT NULL DEFAULT 'USER',
+    unit_id  UUID         NOT NULL,
+    CONSTRAINT fk_users_unit_id FOREIGN KEY (unit_id)
+        REFERENCES unit (id) ON DELETE CASCADE
 );
 
-CREATE TYPE tipo_status AS ENUM ('ESTAVEL','INSTAVEL','CRITICO');
-CREATE TYPE tipo_categoria AS ENUM ('EPI','FERRAMENTAS','HIGIENICOS','SAUDE','ALIMENTACAO','OUTROS');
+CREATE TYPE status_type AS ENUM ('STABLE','UNSTABLE','CRITICAL');
 
-CREATE TABLE equipamento
+CREATE TYPE categories_tools AS ENUM ('EPI', 'TOOLS', 'OTHERS');
+
+CREATE TABLE tools
 (
-    ID          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    QUANTIDADE  BIGINT NOT NULL,
-    STATUS      tipo_status NOT NULL,
-    CATEGORIA   tipo_categoria NOT NULL DEFAULT 'OUTROS',
-    QTD_EM_USO  BIGINT NOT NULL DEFAULT 0,
-    DESCRICAO   VARCHAR(255) NOT NULL,
-    FK_POLO_ID  UUID NOT NULL,
-    CONSTRAINT  FK_POLO_ID FOREIGN KEY (FK_POLO_ID)
-    REFERENCES  polo (ID) ON DELETE CASCADE
+    id          UUID PRIMARY KEY          DEFAULT uuid_generate_v4(),
+    quantity    BIGINT           NOT NULL,
+    status      status_type      NOT NULL,
+    category    categories_tools NOT NULL DEFAULT 'OTHERS',
+    in_use      BIGINT           NOT NULL DEFAULT 0,
+    description VARCHAR(255)     NOT NULL,
+    unit_id     UUID             NOT NULL,
+    CONSTRAINT fk_tools_unit_id FOREIGN KEY (unit_id)
+        REFERENCES unit (id) ON DELETE CASCADE
 );
 
-CREATE TABLE recurso
+CREATE TYPE categories_resources AS ENUM ('HYGIENIC','HEALTH','FOOD','OTHERS');
+
+CREATE TABLE resource
 (
-    ID          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    DESCRICAO   VARCHAR(255) NOT NULL,
-    STATUS      tipo_status NOT NULL,
-    QUANTIDADE  BIGINT NOT NULL,
-    VALIDADE    TIMESTAMP NOT NULL,
-    CATEGORIA   tipo_categoria NOT NULL DEFAULT 'OUTROS',
-    FK_POLO_ID  UUID NOT NULL,
-    CONSTRAINT  FK_POLO_ID FOREIGN KEY (FK_POLO_ID)
-    REFERENCES  polo (ID) ON DELETE CASCADE
+    id          UUID PRIMARY KEY              DEFAULT uuid_generate_v4(),
+    description VARCHAR(255)         NOT NULL,
+    status      status_type          NOT NULL,
+    quantity    BIGINT               NOT NULL,
+    validity    DATE                 NOT NULL,
+    category    categories_resources NOT NULL DEFAULT 'OTHERS',
+    unit_id     UUID                 NOT NULL,
+    CONSTRAINT fk_resource_unit_id FOREIGN KEY (unit_id)
+        REFERENCES unit (id) ON DELETE CASCADE
 );
 
-CREATE TABLE produto
+CREATE TABLE product
 (
-    ID          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    VALIDADE    TIMESTAMP NOT NULL,
-    QUANTIDADE  BIGINT NOT NULL,
-    GTIN        INT NOT NULL,
-    DESCRICAO   VARCHAR(255) NOT NULL
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    validity    DATE         NOT NULL,
+    quantity    BIGINT       NOT NULL,
+    gtin        VARCHAR(14)  NOT NULL,
+    description VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE recurso_produto
+CREATE TABLE resource_product
 (
-    FK_PRODUTO_ID   UUID NOT NULL,
-    FK_RECURSO_ID   UUID NOT NULL,
-    CONSTRAINT      FK_PRODUTO_ID FOREIGN KEY (FK_PRODUTO_ID)
-    REFERENCES      produto (ID) ON DELETE CASCADE,
-    CONSTRAINT      FK_RECURSO_ID FOREIGN KEY (FK_RECURSO_ID)
-    REFERENCES      recurso (ID) ON DELETE CASCADE
+    product_id  UUID NOT NULL,
+    resource_id UUID NOT NULL,
+    CONSTRAINT fk_resource_product_product_id FOREIGN KEY (product_id)
+        REFERENCES product (id) ON DELETE CASCADE,
+    CONSTRAINT fk_resource_product_resource_id FOREIGN KEY (resource_id)
+        REFERENCES resource (ID) ON DELETE CASCADE
 );
 
-CREATE TYPE tipo_alteracao AS ENUM ('CREATE','UPDATE','DELETE');
-CREATE TYPE alvo_alteracao AS ENUM ('ENDERECO','POLO','USUARIO','PRODUTO','RECURSO','EQUIPAMENTO','RECURSO_PRODUTO','ORIGEM');
+CREATE TYPE operation_type AS ENUM ('CREATE','UPDATE','DELETE');
+CREATE TYPE operation_target AS ENUM ('ADDRESS','UNIT','USER','PRODUCT','RESOURCE','TOOLS','RESOURCE_PRODUCT','ORIGIN');
 
-CREATE TABLE alteracoes
+CREATE TABLE operation
 (
-    ID              SERIAL PRIMARY KEY,
-    TIPO_ALTERACAO  tipo_alteracao NOT NULL,
-    DATA_ALTERACAO  TIMESTAMP NOT NULL,
-    ALVO_ALTERACAO  alvo_alteracao NOT NULL,
-    DESCRICAO       VARCHAR(255) NOT NULL,
-    FK_ALVO_ID      UUID NOT NULL,
-    FK_POLO_ID      UUID NOT NULL,
-    FK_USUARIO_ID   UUID NOT NULL,
-    CONSTRAINT      FK_POLO_ID FOREIGN KEY (FK_POLO_ID)
-    REFERENCES      polo (ID) ON DELETE CASCADE,
-    CONSTRAINT      FK_USUARIO_ID FOREIGN KEY (FK_USUARIO_ID)
-    REFERENCES      usuario (ID) ON DELETE CASCADE
+    id               SERIAL PRIMARY KEY,
+    operation        operation_type   NOT NULL,
+    operation_date   TIMESTAMP        NOT NULL,
+    operation_target operation_target NOT NULL,
+    description      VARCHAR(255)     NOT NULL,
+    target_id        UUID             NOT NULL,
+    unit_id          UUID             NOT NULL,
+    users_id         UUID             NOT NULL,
+    CONSTRAINT fk_operation_unit_id FOREIGN KEY (unit_id)
+        REFERENCES unit (id) ON DELETE CASCADE,
+    CONSTRAINT fk_operation_users_id FOREIGN KEY (users_id)
+        REFERENCES users (id) ON DELETE CASCADE
 );
 
-CREATE TYPE tipo_doc AS ENUM ('CPF','CNPJ');
-CREATE TYPE tipo_origem AS ENUM ('EQUIPAMENTO','PRODUTO','RECURSO');
+CREATE TYPE document_type AS ENUM ('CPF','CNPJ');
+CREATE TYPE origin_type AS ENUM ('TOOLS', 'PRODUCT', 'RESOURCE');
 
-CREATE TABLE origem
+CREATE TABLE origin
 (
-    ID SERIAL PRIMARY KEY,
-    NOTA_FISCAL VARCHAR(255) NOT NULL,
-    CPF_CNPJ_ORIGEM VARCHAR(14) NOT NULL,
-    TIPO_DOC tipo_doc NOT NULL,
-    DATA TIMESTAMP NOT NULL,
-    TIPO_ORIGEM tipo_origem NOT NULL,
-    FK_ALVO_ID UUID NOT NULL
+    id              SERIAL PRIMARY KEY,
+    receipt         VARCHAR(255)  NOT NULL,
+    cpf_cnpj_origin VARCHAR(14)   NOT NULL,
+    document        document_type NOT NULL,
+    date            DATE          NOT NULL,
+    origin          origin_type   NOT NULL,
+    target_id       UUID          NOT NULL
 );

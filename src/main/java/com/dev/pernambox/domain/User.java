@@ -1,6 +1,6 @@
 package com.dev.pernambox.domain;
 
-import com.dev.pernambox.domain.enums.Permissao;
+import com.dev.pernambox.domain.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,7 +19,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity(name = "User")
-@Table(name = "usuario", schema = "public")
+@Table(name = "users", schema = "public")
 public class User implements UserDetails {
 
     @Id
@@ -27,8 +27,8 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "nome", nullable = false, unique = true)
-    private String nome;
+    @Column(name = "name", nullable = false, unique = true)
+    private String name;
 
     @Column(name = "cpf", nullable = false, unique = true)
     private String cpf;
@@ -36,35 +36,35 @@ public class User implements UserDetails {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "telefone", nullable = false, unique = true)
-    private String telefone;
+    @Column(name = "phone", nullable = false, unique = true)
+    private String phone;
 
-    @Column(name = "senha", nullable = false, unique = true)
-    private String senha;
+    @Column(name = "password", nullable = false, unique = true)
+    private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "permissao", columnDefinition = "permissao", nullable = false)
-    private Permissao permissao;
+    @Column(name = "role", columnDefinition = "role", nullable = false)
+    private Role role;
 
     @ManyToOne
-    @JoinColumn(name = "polo_id")
-    private Polo polo;
+    @JoinColumn(name = "unit_id")
+    private Unit unit;
 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (this.permissao == Permissao.ADM_GERAL) {
-            return List.of(new SimpleGrantedAuthority("ADM_GERAL"), new SimpleGrantedAuthority("ADM_POLO"), new SimpleGrantedAuthority("FUNCIONARIO"));
-        } else if(this.permissao == Permissao.ADM_POLO) {
-            return List.of(new SimpleGrantedAuthority("ADM_POLO"), new SimpleGrantedAuthority("FUNCIONARIO"));
+        if (this.role == Role.MASTER_ADM) {
+            return List.of(new SimpleGrantedAuthority("MASTER_ADM"), new SimpleGrantedAuthority("UNIT_ADM"), new SimpleGrantedAuthority("USER"));
+        } else if(this.role == Role.UNIT_ADM) {
+            return List.of(new SimpleGrantedAuthority("UNIT_ADM"), new SimpleGrantedAuthority("USER"));
         } else {
-            return List.of(new SimpleGrantedAuthority("FUNCIONARIO"));
+            return List.of(new SimpleGrantedAuthority("USER"));
         }
     }
 
     @Override
     public String getPassword() {
-        return this.senha;
+        return this.password;
     }
 
     @Override

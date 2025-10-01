@@ -24,14 +24,14 @@ public class JwtTokenService {
     private String secretKey;
     private Map<String, Object> payload = new HashMap<>();
 
-    public String gerarToken(User user, String ip, String userAgent) {
+    public String generateToken(User user, String ip, String userAgent) {
         if(user == null) throw new JWTCreationException("User not be a null", new Throwable());
 
         try {
             payload.put("userId", user.getId().toString());
             payload.put("email", user.getEmail());
-            payload.put("cargo", user.getPermissao().toString());
-            payload.put("poloId", user.getPolo().getId().toString());
+            payload.put("role", user.getRole().toString());
+            payload.put("unitId", user.getUnit().getId().toString());
             payload.put("ip", ip);
             payload.put("userAgent", userAgent);
 
@@ -48,7 +48,7 @@ public class JwtTokenService {
         }
     }
 
-    public Map<String, Claim> validarToken(String token, String ip, String userAgent) {
+    public Map<String, Claim> validateToken(String token, String ip, String userAgent) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secretKey);
 

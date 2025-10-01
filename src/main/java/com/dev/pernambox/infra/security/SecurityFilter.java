@@ -31,7 +31,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         var token = this.recoverToken(request);
 
         if (token != null) {
-            Map<String, Claim> payloadToken = tokenService.validarToken(
+            Map<String, Claim> payloadToken = tokenService.validateToken(
                     token,
                     RequestUtils.getRequestIp(request),
                     RequestUtils.getRequestUserAgent(request));
