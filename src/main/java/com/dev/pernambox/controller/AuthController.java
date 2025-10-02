@@ -57,7 +57,7 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponseDto> me(Authentication authentication, HttpServletRequest request) throws AuthException {
+    public ResponseEntity<UserResponseDto> me(Authentication authentication) throws AuthException {
         if (authentication == null) throw new AuthException("Auth Required to this Path");
 
         User user = (User) authentication.getPrincipal();
