@@ -1,6 +1,7 @@
-package com.dev.pernambox.domain;
+package com.dev.pernambox.domain.user;
 
-import com.dev.pernambox.domain.enums.Role;
+import com.dev.pernambox.domain.user.enums.Role;
+import com.dev.pernambox.domain.unit.Unit;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

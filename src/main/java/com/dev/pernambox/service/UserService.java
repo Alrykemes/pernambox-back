@@ -1,0 +1,25 @@
+package com.dev.pernambox.service;
+
+import com.dev.pernambox.domain.user.User;
+import com.dev.pernambox.exceptions.NotFoundException;
+import com.dev.pernambox.repositories.UserRepository;
+import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.UUID;
+
+@AllArgsConstructor
+@Service
+public class UserService {
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public User getUserByEmail(String email) throws NotFoundException {
+        return this.userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    public Boolean changeUserPassword(UUID userId, String password) {
+        return this.userRepository.updatePasswordById(userId, passwordEncoder.encode(password)) == 1;
+    }
+}
