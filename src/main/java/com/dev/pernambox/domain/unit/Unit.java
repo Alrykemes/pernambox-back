@@ -1,5 +1,7 @@
-package com.dev.pernambox.domain;
+package com.dev.pernambox.domain.unit;
 
+import com.dev.pernambox.domain.address.Address;
+import com.dev.pernambox.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

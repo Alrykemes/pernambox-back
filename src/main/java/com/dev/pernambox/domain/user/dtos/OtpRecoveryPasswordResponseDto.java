@@ -1,9 +1,9 @@
 package com.dev.pernambox.domain.user.dtos;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+import java.time.LocalTime;
+import java.util.UUID;
 
-public record OtpRecoveryPasswordRequestDto(
-        @NotBlank(message = "email is required")
-        @Email(message = "email must be a valid email")
-        String email) {}
+public record OtpRecoveryPasswordResponseDto(
+        Boolean sucess,
+        UUID userId,
+        LocalTime expiresIn) {}

@@ -1,4 +1,4 @@
-package com.dev.pernambox.domain;
+package com.dev.pernambox.domain.address;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

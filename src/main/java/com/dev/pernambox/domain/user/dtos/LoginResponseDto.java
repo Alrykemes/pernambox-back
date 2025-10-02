@@ -1,7 +1,6 @@
-package com.dev.pernambox.domain.dtos;
+package com.dev.pernambox.domain.user.dtos;
 
-import com.dev.pernambox.domain.enums.Role;
-import jakarta.validation.constraints.NotNull;
+import com.dev.pernambox.domain.user.enums.Role;
 
 import java.util.UUID;
 
