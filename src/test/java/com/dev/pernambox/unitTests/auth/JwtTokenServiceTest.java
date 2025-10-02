@@ -2,16 +2,13 @@ package com.dev.pernambox.unitTests.auth;
 
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.interfaces.Claim;
-import com.dev.pernambox.domain.Polo;
-import com.dev.pernambox.domain.User;
-import com.dev.pernambox.domain.enums.Permissao;
+import com.dev.pernambox.domain.address.Address;
+import com.dev.pernambox.domain.unit.Unit;
+import com.dev.pernambox.domain.user.User;
+import com.dev.pernambox.domain.user.enums.Role;
 import com.dev.pernambox.infra.security.JwtTokenService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
@@ -36,8 +33,11 @@ public class JwtTokenServiceTest {
                 "teste",
                 "teste",
                 "teste",
-                Permissao.FUNCIONARIO,
-                new Polo(UUID.randomUUID(), "", "", "", "", "", new ArrayList<User>()));
+                Role.USER,
+                new Unit(UUID.randomUUID(),
+                        "name of Unit",
+                        new Address(UUID.randomUUID(), "", "", "", "", "", "", ""),
+                        new ArrayList<User>()));
 
         String ip = "192.168.0.1";
         String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)";
@@ -45,7 +45,7 @@ public class JwtTokenServiceTest {
         this.jwtTokenService = new JwtTokenService();
         ReflectionTestUtils.setField(this.jwtTokenService, "secretKey", "secretkeyteste123");
 
-        this.tokenValido = jwtTokenService.gerarToken(this.userTest, ip, userAgent);
+        this.tokenValido = jwtTokenService.generateToken(this.userTest, ip, userAgent);
     }
 
     @Test
@@ -53,7 +53,7 @@ public class JwtTokenServiceTest {
         String ip = "192.168.0.1";
         String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)";
 
-        this.tokenValido = jwtTokenService.gerarToken(this.userTest, ip, userAgent);
+        this.tokenValido = jwtTokenService.generateToken(this.userTest, ip, userAgent);
 
         assertNotNull("Valida se token é nulo", tokenValido);
 
@@ -69,7 +69,7 @@ public class JwtTokenServiceTest {
         String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)";
 
         assertThrows(JWTCreationException.class, () -> {
-                    this.tokenValido = jwtTokenService.gerarToken(null, ip, userAgent);
+                    this.tokenValido = jwtTokenService.generateToken(null, ip, userAgent);
                 }
         );
     }
@@ -79,7 +79,7 @@ public class JwtTokenServiceTest {
         String ip = "192.168.0.1";
         String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)";
 
-        Map<String, Claim> claims = jwtTokenService.validarToken(tokenValido, ip, userAgent);
+        Map<String, Claim> claims = jwtTokenService.validateToken(tokenValido, ip, userAgent);
 
         assertNotNull("payload do token", claims);
         assertEquals("valida ip", ip, claims.get("ip").asString());
@@ -92,7 +92,7 @@ public class JwtTokenServiceTest {
         String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)";
 
         assertThrows(SecurityException.class, () -> {
-                    Map<String, Claim> claims = jwtTokenService.validarToken(tokenValido, ip, userAgent);
+                    Map<String, Claim> claims = jwtTokenService.validateToken(tokenValido, ip, userAgent);
                 }
         );
     }
@@ -103,7 +103,7 @@ public class JwtTokenServiceTest {
         String userAgent = "Mozilla/4.0 (Windows NT 10.0; Win64; x64)";
 
         assertThrows(SecurityException.class, () -> {
-                    Map<String, Claim> claims = jwtTokenService.validarToken(tokenValido, ip, userAgent);
+                    Map<String, Claim> claims = jwtTokenService.validateToken(tokenValido, ip, userAgent);
                 }
         );
     }
