@@ -2,13 +2,21 @@ package com.dev.pernambox.controller;
 
 import com.dev.pernambox.domain.user.User;
 import com.dev.pernambox.domain.user.dtos.*;
+import com.dev.pernambox.exceptions.AuthenticationException;
 import com.dev.pernambox.exceptions.PasswordResetException;
 import com.dev.pernambox.infra.security.JwtTokenService;
 import com.dev.pernambox.service.EmailService;
 import com.dev.pernambox.service.RedisService;
 import com.dev.pernambox.service.UserService;
+import com.dev.pernambox.utils.RequestUtils;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,32 +34,42 @@ public class PasswordResetController {
     private final RedisService redisService;
     private final UserService userService;
 
-    @PostMapping("")
-    public ResponseEntity<PasswordResetOtpResponseDto> initiatePasswordReset(@RequestBody PasswordResetOtpRequestDto body) {
-        User user = userService.getUserByEmail(body.email());
+    @GetMapping("/send-otp")
+    public ResponseEntity<PasswordResetOtpResponseDto> initiatePasswordReset(
+            @RequestParam
+            @NotBlank(message = "email is required")
+            @Email(message = "email must be a valid email")
+            String email
+    ) {
+        User user = userService.getUserByEmail(email);
         String otpCode = redisService.generateOtpCode(user.getId());
-        emailService.sendEmail(body.email(), "Pernambox - Recuperação Senha", "Seu código de recuperação de senha: " + otpCode);
+        emailService.sendEmail(email, "Pernambox - Recuperação Senha", "Seu código de recuperação de senha: " + otpCode);
         return ResponseEntity.ok(new PasswordResetOtpResponseDto(true, user.getId(), LocalTime.now().plusMinutes(15)));
     }
 
-    @PostMapping("/verify")
-    public ResponseEntity<VerifyOTPResponseDto> verifyOTP(@RequestBody VerifyOTPRequestDto body) {
-        UUID userId = redisService.validateOtpAndGetUserId(body.otpCode());
-
-        if (userId == null) {
+    @PostMapping("/validate-otp")
+    public ResponseEntity<VerifyOTPResponseDto> verifyOTP(@RequestBody VerifyOTPRequestDto body, HttpServletRequest request) {
+        if (!redisService.validateOtp(body.userId(), body.otpCode())) {
             throw new PasswordResetException("Invalid or expired OTP code");
         }
 
-        String token = jwtTokenService.generatePasswordResetToken(userId);
+        User user = userService.getUserById(body.userId().toString());
+
+        String token = jwtTokenService.generatePasswordResetToken(
+                body.userId(),
+                user.getEmail(),
+                RequestUtils.getRequestIp(request),
+                RequestUtils.getRequestUserAgent(request)
+        );
+
         return ResponseEntity.ok(new VerifyOTPResponseDto(true, token));
     }
 
-    @PatchMapping("")
-    public ResponseEntity<NewPasswordResponseDto> resetPassword(@RequestBody NewPasswordRequestDto body, @RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        UUID userId = jwtTokenService.validatePasswordResetToken(token);
-        userService.changeUserPassword(userId, passwordEncoder.encode(body.password()));
-        return ResponseEntity.ok(new NewPasswordResponseDto(true));
+    @PatchMapping("/change-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody NewPasswordRequestDto body, Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        userService.changeUserPassword(user.getId(), passwordEncoder.encode(body.password()));
+        return ResponseEntity.ok().build();
     }
 
 }

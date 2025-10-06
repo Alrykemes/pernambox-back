@@ -28,13 +28,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
+                        // NOAUTH
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/password-reset").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/password-reset/verify").permitAll()
-                        // depois deixar essa rota protegida gerando um JWT Personalizado com 15min
-                        // de duração assim como o OTPCODE
-                        .requestMatchers(HttpMethod.PATCH, "/auth/password-reset").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/auth/me").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/auth/password-reset/send-otp").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/password-reset/validate-otp").permitAll()
+                        // AUTH
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);

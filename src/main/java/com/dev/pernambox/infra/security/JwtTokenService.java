@@ -6,6 +6,7 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.Claim;
 import com.dev.pernambox.domain.user.User;
+import com.dev.pernambox.service.UserService;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,28 +25,29 @@ public class JwtTokenService {
 
     @Value("infra.security.jwt")
     private String secretKey;
-    private Map<String, Object> payload = new HashMap<>();
+    private final Map<String, Object> createPayload = new HashMap<>();
+    private final Map<String, Claim> validatePayload = new HashMap<>();
 
     // For normal login
     public String generateToken(User user, String ip, String userAgent) {
-        if(user == null) throw new JWTCreationException("User not be a null", new Throwable());
+        if (user == null) throw new JWTCreationException("User not be a null", new Throwable());
 
         try {
-            payload.put("userId", user.getId().toString());
-            payload.put("email", user.getEmail());
-            payload.put("role", user.getRole().toString());
-            payload.put("unitId", user.getUnit().getId().toString());
-            payload.put("ip", ip);
-            payload.put("userAgent", userAgent);
+            this.createPayload.clear();
+            this.createPayload.put("userId", user.getId().toString());
+            this.createPayload.put("email", user.getEmail());
+            this.createPayload.put("role", user.getRole().toString());
+            this.createPayload.put("unitId", user.getUnit().getId().toString());
+            this.createPayload.put("ip", ip);
+            this.createPayload.put("userAgent", userAgent);
 
             Algorithm algorithm = Algorithm.HMAC256(secretKey);
-            String token = JWT.create()
+            return JWT.create()
                     .withIssuer("login-auth")
                     .withSubject(user.getId().toString())
-                    .withPayload(this.payload)
+                    .withPayload(this.createPayload)
                     .withExpiresAt(this.generateExpirationDate())
                     .sign(algorithm);
-            return token;
         } catch (JWTCreationException ex) {
             throw new SecurityException();
         }
@@ -53,62 +55,68 @@ public class JwtTokenService {
 
     public Map<String, Claim> validateToken(String token, String ip, String userAgent) {
         try {
+            this.validatePayload.clear();
             Algorithm algorithm = Algorithm.HMAC256(secretKey);
+            try {
+                this.validatePayload.clear();
+                this.validatePayload.putAll(
+                        JWT.require(algorithm)
+                                .withIssuer("login-auth")
+                                .build()
+                                .verify(token)
+                                .getClaims()
+                );
+            } catch (Exception e) {
+                this.validatePayload.clear();
+                this.validatePayload.putAll(
+                        JWT.require(algorithm)
+                                .withIssuer("password-reset")
+                                .build()
+                                .verify(token)
+                                .getClaims()
+                );
+            }
 
-            Map<String, Claim> payload = JWT.require(algorithm)
-                    .withIssuer("login-auth")
-                    .build()
-                    .verify(token)
-                    .getClaims();
 
-            if (!payload.get("ip").asString().equals(ip)) {
+            if (!this.validatePayload.get("ip").asString().equals(ip)) {
                 // guarda no log
                 throw new SecurityException("Ip de requisição diferente do token");
             }
 
-            if (!payload.get("userAgent").asString().equals(userAgent)) {
+            if (!this.validatePayload.get("userAgent").asString().equals(userAgent)) {
                 // guarda no log
                 throw new SecurityException("User Agent de requisição diferente do token");
             }
 
-            return payload;
+            return this.validatePayload;
         } catch (JWTVerificationException exception) {
             // guarda no log
-            throw new SecurityException();
+            exception.printStackTrace();
+            throw new SecurityException("Error in JWT validation");
         }
     }
 
     // for password reset
-    public String generatePasswordResetToken(UUID userId) {
+    public String generatePasswordResetToken(UUID userId, String email, String ip, String userAgent) {
+
         try {
+            this.createPayload.clear();
+            this.createPayload.put("userId", userId.toString());
+            this.createPayload.put("email", email);
+            this.createPayload.put("ip", ip);
+            this.createPayload.put("userAgent", userAgent);
+
+
             Algorithm algorithm = Algorithm.HMAC256(secretKey);
+
             return JWT.create()
                     .withIssuer("password-reset")
                     .withSubject(userId.toString())
-                    .withClaim("purpose", "PASSWORD_RESET")
+                    .withPayload(this.createPayload)
                     .withExpiresAt(generateExpirationDateMinutes(10))
                     .sign(algorithm);
         } catch (JWTCreationException ex) {
             throw new SecurityException("Error creating password reset token");
-        }
-    }
-
-    public UUID validatePasswordResetToken(String token) {
-        try {
-            Algorithm algorithm = Algorithm.HMAC256(secretKey);
-            var decoded = JWT.require(algorithm)
-                    .withIssuer("password-reset")
-                    .build()
-                    .verify(token);
-
-            String purpose = decoded.getClaim("purpose").asString();
-            if (!"PASSWORD_RESET".equals(purpose)) {
-                throw new SecurityException("Invalid token purpose");
-            }
-
-            return UUID.fromString(decoded.getSubject());
-        } catch (JWTVerificationException e) {
-            throw new SecurityException("Invalid or expired password reset token");
         }
     }
 

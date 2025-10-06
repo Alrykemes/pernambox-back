@@ -1,10 +1,12 @@
 package com.dev.pernambox.service;
 
+import com.dev.pernambox.exceptions.PasswordResetException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 
@@ -17,20 +19,22 @@ public class RedisService {
 
     public String generateOtpCode(UUID userId) {
         String otp = String.valueOf(100000 + random.nextInt(900000));
-        String key = "otp:" + otp;
+        String key = "otp:" + userId.toString();
         redisTemplate.opsForValue().set(key, otp, Duration.ofMinutes(15));
-        redisTemplate.opsForValue().set(key, userId.toString(), Duration.ofMinutes(15));
         return otp;
     }
 
-    public UUID validateOtpAndGetUserId(String otpCode) {
-        String key = "otp:" + otpCode;
-        String userIdStr = redisTemplate.opsForValue().get(key);
+    public Boolean validateOtp(UUID userId, String otpCode) throws PasswordResetException {
+        String key = "otp:" + userId.toString();
+        String otpCodeRedis = redisTemplate.opsForValue().get(key);
 
-        if (userIdStr != null) {
+        System.out.println("Otp code redis: " + otpCodeRedis);
+
+        if (otpCode.equals(otpCodeRedis)) {
             redisTemplate.delete(key);
-            return UUID.fromString(userIdStr);
+            return true;
+        } else {
+            throw new PasswordResetException("OTP code is invalid or expired");
         }
-        return null;
     }
 }

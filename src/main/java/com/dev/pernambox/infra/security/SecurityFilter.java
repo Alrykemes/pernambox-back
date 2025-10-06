@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNullApi;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,14 +28,6 @@ public class SecurityFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // Posteriormente verificação de origin e referer para bloquear de origem que não seja o nosso front.
-
-        String path = request.getServletPath();
-
-        // 🚫 Ignora as rotas públicas (não tenta validar JWT nelas)
-        if (path.startsWith("/auth/password-reset") || path.startsWith("/auth/login")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         var token = this.recoverToken(request);
 

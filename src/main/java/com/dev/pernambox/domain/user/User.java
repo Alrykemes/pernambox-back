@@ -47,7 +47,7 @@ public class User implements UserDetails {
     @Column(name = "role", columnDefinition = "role", nullable = false)
     private Role role;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "unit_id")
     private Unit unit;
 
