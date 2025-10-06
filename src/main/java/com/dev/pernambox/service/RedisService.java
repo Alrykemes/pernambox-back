@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.Random;
+import java.util.UUID;
 
 @AllArgsConstructor
 @Service
@@ -14,23 +15,22 @@ public class RedisService {
     private final StringRedisTemplate redisTemplate;
     private final Random random = new Random();
 
-    public String gerarOtp(String userId) {
+    public String generateOtpCode(UUID userId) {
         String otp = String.valueOf(100000 + random.nextInt(900000));
-
-        String chave = "otp:" + userId;
-        redisTemplate.opsForValue().set(chave, otp, Duration.ofMinutes(15));
-
+        String key = "otp:" + otp;
+        redisTemplate.opsForValue().set(key, otp, Duration.ofMinutes(15));
+        redisTemplate.opsForValue().set(key, userId.toString(), Duration.ofMinutes(15));
         return otp;
     }
 
-    public boolean validarOtp(String userId, String otp) {
-        String chave = "otp:" + userId;
-        String valor = redisTemplate.opsForValue().get(chave);
+    public UUID validateOtpAndGetUserId(String otpCode) {
+        String key = "otp:" + otpCode;
+        String userIdStr = redisTemplate.opsForValue().get(key);
 
-        if (valor != null && valor.equals(otp)) {
-            redisTemplate.delete(chave);
-            return true;
+        if (userIdStr != null) {
+            redisTemplate.delete(key);
+            return UUID.fromString(userIdStr);
         }
-        return false;
+        return null;
     }
 }

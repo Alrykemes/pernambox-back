@@ -15,11 +15,15 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public User getUserByEmail(String email) throws NotFoundException {
+    public User getUserByEmail(String email) {
         return this.userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found"));
     }
 
-    public Boolean changeUserPassword(UUID userId, String password) {
-        return this.userRepository.updatePasswordById(userId, passwordEncoder.encode(password)) == 1;
+    public User getUserById(String userId) {
+        return this.userRepository.findById(UUID.fromString(userId)).orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    public void changeUserPassword(UUID userId, String password) {
+        this.userRepository.updatePasswordById(userId, passwordEncoder.encode(password));
     }
 }
