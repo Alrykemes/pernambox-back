@@ -30,7 +30,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // NOAUTH
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/auth/password-reset/send-otp").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/password-reset").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/password-reset/validate-otp").permitAll()
                         // AUTH
                         .anyRequest().authenticated()
