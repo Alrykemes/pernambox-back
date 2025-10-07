@@ -34,7 +34,7 @@ public class PasswordResetController {
     private final RedisService redisService;
     private final UserService userService;
 
-    @GetMapping("/send-otp")
+    @PostMapping()
     public ResponseEntity<PasswordResetOtpResponseDto> initiatePasswordReset(
             @RequestParam
             @NotBlank(message = "email is required")
@@ -65,7 +65,7 @@ public class PasswordResetController {
         return ResponseEntity.ok(new VerifyOTPResponseDto(true, token));
     }
 
-    @PatchMapping("/change-password")
+    @PatchMapping()
     public ResponseEntity<?> resetPassword(@Valid @RequestBody NewPasswordRequestDto body, Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         userService.changeUserPassword(user.getId(), passwordEncoder.encode(body.password()));
