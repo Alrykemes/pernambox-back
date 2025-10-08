@@ -38,5 +38,6 @@ public class Address {
     @Column(nullable = false)
     private String zipCode;
 
+    @Column(nullable = false)
     private String complement;
 }

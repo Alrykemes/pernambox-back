@@ -48,9 +48,8 @@ public class User implements UserDetails {
     private Role role;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "unit_id")
+    @JoinColumn(name = "unit_id", nullable = false)
     private Unit unit;
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

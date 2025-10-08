@@ -68,8 +68,11 @@ public class PasswordResetController {
     @PatchMapping()
     public ResponseEntity<?> resetPassword(@Valid @RequestBody NewPasswordRequestDto body, Authentication authentication) {
         User user = (User) authentication.getPrincipal();
-        userService.changeUserPassword(user.getId(), passwordEncoder.encode(body.password()));
-        return ResponseEntity.ok().build();
+        if (userService.changeUserPassword(user.getId(), body.password())) {
+            return ResponseEntity.ok().build();
+        } else {
+            throw new PasswordResetException("Failed to reset password in DB");
+        }
     }
 
 }

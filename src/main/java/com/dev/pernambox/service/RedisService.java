@@ -28,8 +28,6 @@ public class RedisService {
         String key = "otp:" + userId.toString();
         String otpCodeRedis = redisTemplate.opsForValue().get(key);
 
-        System.out.println("Otp code redis: " + otpCodeRedis);
-
         if (otpCode.equals(otpCodeRedis)) {
             redisTemplate.delete(key);
             return true;
