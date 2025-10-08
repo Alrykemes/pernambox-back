@@ -1,7 +1,6 @@
 package com.dev.pernambox.controller;
 
 import com.dev.pernambox.domain.refreshToken.RefreshToken;
-import com.dev.pernambox.domain.refreshToken.dtos.RefreshTokenDto;
 import com.dev.pernambox.domain.user.User;
 import com.dev.pernambox.domain.user.dtos.*;
 import com.dev.pernambox.exceptions.AuthenticationException;
@@ -22,7 +21,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.UUID;
 
 @RequiredArgsConstructor

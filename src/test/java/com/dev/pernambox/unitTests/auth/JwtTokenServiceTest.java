@@ -3,7 +3,7 @@ package com.dev.pernambox.unitTests.auth;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.interfaces.Claim;
 import com.dev.pernambox.domain.address.Address;
-import com.dev.pernambox.domain.refreshToken.dtos.RefreshTokenDto;
+
 import com.dev.pernambox.domain.unit.Unit;
 import com.dev.pernambox.domain.user.User;
 import com.dev.pernambox.domain.user.enums.Role;

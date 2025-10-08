@@ -6,7 +6,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 

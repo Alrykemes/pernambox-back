@@ -8,8 +8,6 @@ public record LoginRequestDto(
         @NotBlank(message = "email is required")
         @Email(message = "email must be a valid email")
         String email,
-
         @NotBlank(message = "password is required")
         @Size(min = 8, message = "password must be at least 8 characters")
-        String password) {
-}
+        String password) {}

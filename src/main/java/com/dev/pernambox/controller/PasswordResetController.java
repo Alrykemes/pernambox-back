@@ -2,7 +2,6 @@ package com.dev.pernambox.controller;
 
 import com.dev.pernambox.domain.user.User;
 import com.dev.pernambox.domain.user.dtos.*;
-import com.dev.pernambox.exceptions.AuthenticationException;
 import com.dev.pernambox.exceptions.PasswordResetException;
 import com.dev.pernambox.infra.security.JwtTokenService;
 import com.dev.pernambox.service.EmailService;
@@ -14,21 +13,18 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalTime;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth/password-reset")
 @RequiredArgsConstructor
 public class PasswordResetController {
 
-    private final PasswordEncoder passwordEncoder;
     private final JwtTokenService jwtTokenService;
     private final EmailService emailService;
     private final RedisService redisService;

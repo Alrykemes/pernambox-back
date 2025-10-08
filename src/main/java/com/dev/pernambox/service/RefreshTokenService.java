@@ -27,16 +27,16 @@ public class RefreshTokenService {
                 .orElseThrow(() -> new NotFoundException("Refresh Token Not Found"));
     }
 
-    public RefreshToken save(RefreshToken refreshToken) {
-        return refreshTokenRepository.save(refreshToken);
+    public void save(RefreshToken refreshToken) {
+        refreshTokenRepository.save(refreshToken);
     }
 
-    public boolean updateById(UUID token, UUID newToken, LocalDateTime expirationDate) throws UpdateEntityException {
-        return refreshTokenRepository.updateRefreshByToken(
+    public void updateById(UUID token, UUID newToken, LocalDateTime expirationDate) throws UpdateEntityException {
+        refreshTokenRepository.updateRefreshByToken(
                 token,
                 newToken,
                 expirationDate
-        ) < 0;
+        );
     }
 
     public RefreshToken getRefreshTokenByCookies(HttpServletRequest request) throws NotFoundException {
