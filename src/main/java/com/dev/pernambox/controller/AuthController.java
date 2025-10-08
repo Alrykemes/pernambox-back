@@ -9,6 +9,9 @@ import com.dev.pernambox.infra.security.JwtTokenService;
 import com.dev.pernambox.service.RefreshTokenService;
 import com.dev.pernambox.service.UserService;
 import com.dev.pernambox.utils.RequestUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,6 +30,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/auth")
 @Validated
+@Tag(name = "Auth", description = "Operações relacionadas a autenticação dos usuários")
 public class AuthController {
 
     private final PasswordEncoder passwordEncoder;
@@ -35,6 +39,8 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/login")
+    @Operation(summary = "Realiza login do usuário", description = "Realiza login stateless do usuário a partir do email" +
+            " e senha, retorna todas as informações do usuário")
     public ResponseEntity<LoginResponseDto> login(
             @Valid @RequestBody LoginRequestDto body,
             HttpServletRequest request,
@@ -72,6 +78,8 @@ public class AuthController {
     }
 
     @GetMapping("/me")
+    @Operation(summary = "Verifica autenticação do usuário", description = "Verifica autenticação do usuário a partir da" +
+            " jwt, e retorna todas as informações dele")
     public ResponseEntity<UserResponseDto> me(Authentication authentication) {
         if (authentication == null) throw new AuthenticationException("Auth Required to this Path");
 
@@ -81,6 +89,8 @@ public class AuthController {
     }
 
     @GetMapping("refresh-token")
+    @Operation(summary = "Atualiza o acess Token do usuário", description = "Atualiza o acess Token do usuário a partir " +
+            "do cookie http-only se o RefreshToken estiver espirado retorna erro")
     public ResponseEntity<LoginResponseDto> refreshToken(HttpServletRequest request, HttpServletResponse response) {
 
         RefreshToken refreshTokenFromCookie = refreshTokenService.getRefreshTokenByCookies(request);
