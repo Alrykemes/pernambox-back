@@ -38,7 +38,7 @@ public class SecurityConfig {
                         // NOAUTH
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/auth/refresh-token").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/auth/password-reset/send-otp").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/password-reset").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/password-reset/validate-otp").permitAll()
                         .requestMatchers(HttpMethod.GET, SWAGGER_WHITELIST).permitAll()
                         // AUTH
