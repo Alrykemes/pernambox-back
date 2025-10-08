@@ -6,8 +6,6 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.Claim;
 import com.dev.pernambox.domain.user.User;
-import com.dev.pernambox.service.UserService;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -28,7 +26,6 @@ public class JwtTokenService {
     private final Map<String, Object> createPayload = new HashMap<>();
     private final Map<String, Claim> validatePayload = new HashMap<>();
 
-    // For normal login
     public String generateToken(User user, String ip, String userAgent) {
         if (user == null) throw new JWTCreationException("User not be a null", new Throwable());
 
@@ -46,7 +43,7 @@ public class JwtTokenService {
                     .withIssuer("login-auth")
                     .withSubject(user.getId().toString())
                     .withPayload(this.createPayload)
-                    .withExpiresAt(this.generateExpirationDate())
+                    .withExpiresAt(this.generateExpirationDateMinutes())
                     .sign(algorithm);
         } catch (JWTCreationException ex) {
             throw new SecurityException();
@@ -96,7 +93,6 @@ public class JwtTokenService {
         }
     }
 
-    // for password reset
     public String generatePasswordResetToken(UUID userId, String email, String ip, String userAgent) {
 
         try {
@@ -113,18 +109,14 @@ public class JwtTokenService {
                     .withIssuer("password-reset")
                     .withSubject(userId.toString())
                     .withPayload(this.createPayload)
-                    .withExpiresAt(generateExpirationDateMinutes(10))
+                    .withExpiresAt(generateExpirationDateMinutes())
                     .sign(algorithm);
         } catch (JWTCreationException ex) {
             throw new SecurityException("Error creating password reset token");
         }
     }
 
-    private Instant generateExpirationDate() {
-        return LocalDateTime.now().plusHours(3).toInstant(ZoneOffset.of("-08:00"));
-    }
-
-    private Instant generateExpirationDateMinutes(int minutes) {
-        return LocalDateTime.now().plusMinutes(minutes).toInstant(ZoneOffset.of("-03:00"));
+    private Instant generateExpirationDateMinutes() {
+        return LocalDateTime.now().plusMinutes(15).toInstant(ZoneOffset.of("-03:00"));
     }
 }

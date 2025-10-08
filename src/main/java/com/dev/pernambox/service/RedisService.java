@@ -6,7 +6,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 
@@ -27,8 +26,6 @@ public class RedisService {
     public Boolean validateOtp(UUID userId, String otpCode) throws PasswordResetException {
         String key = "otp:" + userId.toString();
         String otpCodeRedis = redisTemplate.opsForValue().get(key);
-
-        System.out.println("Otp code redis: " + otpCodeRedis);
 
         if (otpCode.equals(otpCodeRedis)) {
             redisTemplate.delete(key);
