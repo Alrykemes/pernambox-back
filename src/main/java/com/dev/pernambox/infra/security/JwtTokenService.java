@@ -54,40 +54,32 @@ public class JwtTokenService {
         try {
             this.validatePayload.clear();
             Algorithm algorithm = Algorithm.HMAC256(secretKey);
-            try {
-                this.validatePayload.clear();
-                this.validatePayload.putAll(
-                        JWT.require(algorithm)
-                                .withIssuer("login-auth")
-                                .build()
-                                .verify(token)
-                                .getClaims()
-                );
-            } catch (Exception e) {
-                this.validatePayload.clear();
-                this.validatePayload.putAll(
-                        JWT.require(algorithm)
-                                .withIssuer("password-reset")
-                                .build()
-                                .verify(token)
-                                .getClaims()
-                );
-            }
 
+            this.validatePayload.clear();
+            this.validatePayload.putAll(
+                    JWT.require(algorithm)
+                            .withIssuer("login-auth", "password-reset")
+                            .build()
+                            .verify(token)
+                            .getClaims()
+            );
 
             if (!this.validatePayload.get("ip").asString().equals(ip)) {
-                // guarda no log
+                // Log error
+
                 throw new SecurityException("Ip de requisição diferente do token");
             }
 
             if (!this.validatePayload.get("userAgent").asString().equals(userAgent)) {
-                // guarda no log
+                // Log error
+
                 throw new SecurityException("User Agent de requisição diferente do token");
             }
 
             return this.validatePayload;
         } catch (JWTVerificationException exception) {
-            // guarda no log
+            // Log error
+
             exception.printStackTrace();
             throw new SecurityException("Error in JWT validation");
         }

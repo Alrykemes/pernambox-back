@@ -23,15 +23,30 @@ public class RedisService {
         return otp;
     }
 
-    public Boolean validateOtp(UUID userId, String otpCode) throws PasswordResetException {
+    public void validateOtp(UUID userId, String otpCode) throws PasswordResetException {
         String key = "otp:" + userId.toString();
         String otpCodeRedis = redisTemplate.opsForValue().get(key);
 
         if (otpCode.equals(otpCodeRedis)) {
             redisTemplate.delete(key);
-            return true;
         } else {
             throw new PasswordResetException("OTP code is invalid or expired");
+        }
+    }
+
+    public void insertPasswordResetToken(UUID userId, String token) {
+        String key = "password_reset:" + userId.toString();
+        redisTemplate.opsForValue().set(key, token, Duration.ofMinutes(15));
+    }
+
+    public void validatePasswordResetToken(UUID userId, String token) {
+        String key = "password_reset:" + userId.toString();
+        String tokenRedis = redisTemplate.opsForValue().get(key);
+
+        if (token.equals(tokenRedis)) {
+            redisTemplate.delete(key);
+        } else {
+            throw new PasswordResetException("Token is invalid or expired");
         }
     }
 }
