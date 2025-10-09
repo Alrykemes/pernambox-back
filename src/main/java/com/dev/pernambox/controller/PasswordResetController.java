@@ -51,9 +51,7 @@ public class PasswordResetController {
     @Operation(summary = "Valida código OTP", description = "Valida código OTP que usuário recebeu por email " +
             "e retorna a Jwt que pode ser usada para alterar a senha.")
     public ResponseEntity<VerifyOTPResponseDto> verifyOTP(@RequestBody VerifyOTPRequestDto body, HttpServletRequest request) {
-        if (!redisService.validateOtp(body.userId(), body.otpCode())) {
-            throw new PasswordResetException("Invalid or expired OTP code");
-        }
+        redisService.validateOtp(body.userId(), body.otpCode());
 
         User user = userService.getUserById(body.userId().toString());
 
@@ -64,14 +62,23 @@ public class PasswordResetController {
                 RequestUtils.getRequestUserAgent(request)
         );
 
+        redisService.insertPasswordResetToken(body.userId(), token);
+
         return ResponseEntity.ok(new VerifyOTPResponseDto(true, token));
     }
 
     @PatchMapping()
     @Operation(summary = "Muda a senha do usuário", description = "Recebe jwt para alteração da senha e retorna 200 com" +
             " body vazio se tudo certo.")
-    public ResponseEntity<?> resetPassword(@Valid @RequestBody NewPasswordRequestDto body, Authentication authentication) {
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody NewPasswordRequestDto body, Authentication authentication, HttpServletRequest request) {
         User user = (User) authentication.getPrincipal();
+
+        String token = request.getHeader("Authorization").replace("Bearer ", "");
+
+        userService.verifySamePassword(user.getId(), body.password());
+
+        redisService.validatePasswordResetToken(user.getId(), token);
+
         if (userService.changeUserPassword(user.getId(), body.password())) {
             return ResponseEntity.ok().build();
         } else {
