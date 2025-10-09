@@ -2,7 +2,6 @@ package com.dev.pernambox.service;
 
 import com.dev.pernambox.domain.user.User;
 import com.dev.pernambox.exceptions.NotFoundException;
-import com.dev.pernambox.exceptions.PasswordResetException;
 import com.dev.pernambox.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,13 +25,5 @@ public class UserService {
 
     public boolean changeUserPassword(UUID userId, String password) {
         return this.userRepository.updatePasswordById(userId, passwordEncoder.encode(password)) > 0;
-    }
-
-    public void verifySamePassword(UUID userId, String password) {
-        User user = this.getUserById(userId.toString());
-
-        if(passwordEncoder.matches(password, user.getPassword())) {
-            throw new PasswordResetException("New password cannot be the same as the old password");
-        }
     }
 }
