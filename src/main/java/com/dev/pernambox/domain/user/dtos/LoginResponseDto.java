@@ -6,7 +6,7 @@ import com.dev.pernambox.domain.user.enums.Role;
 import java.util.UUID;
 
 public record LoginResponseDto(UUID userId, String email, Role role, String token) {
-    public LoginResponseDto(User user, String acessToken) {
-        this(user.getId(), user.getEmail(), user.getRole(), acessToken);
+    public LoginResponseDto(User user, String accessToken) {
+        this(user.getId(), user.getEmail(), user.getRole(), accessToken);
     }
 }

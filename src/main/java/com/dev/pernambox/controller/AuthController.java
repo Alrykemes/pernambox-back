@@ -52,17 +52,17 @@ public class AuthController {
             throw new AuthenticationException("Invalid credentials");
         }
 
-        String acessToken = jwtTokenService.generateToken(
+        String accessToken = jwtTokenService.generateToken(
                 user,
                 RequestUtils.getRequestIp(request),
                 RequestUtils.getRequestUserAgent(request)
         );
 
+        UUID newToken = UUID.randomUUID();
+
         RefreshToken newRefreshToken = new RefreshToken();
         newRefreshToken.setUser(user);
         newRefreshToken.setExpirationDate(LocalDateTime.now().plusDays(15));
-
-        UUID newToken = UUID.randomUUID();
 
         try {
             RefreshToken refreshTokenFromDb = refreshTokenService.findByUserId(user.getId());
@@ -70,11 +70,11 @@ public class AuthController {
         } catch (NotFoundException e) {
             refreshTokenService.save(newRefreshToken);
             this.setRefreshTokenCookies(response, newRefreshToken.getToken());
-            return ResponseEntity.ok(new LoginResponseDto(user, acessToken));
+            return ResponseEntity.ok(new LoginResponseDto(user, accessToken));
         }
 
         this.setRefreshTokenCookies(response, newToken);
-        return ResponseEntity.ok(new LoginResponseDto(user, acessToken));
+        return ResponseEntity.ok(new LoginResponseDto(user, accessToken));
     }
 
     @GetMapping("/me")
@@ -115,7 +115,7 @@ public class AuthController {
 
         this.setRefreshTokenCookies(response, newToken);
 
-        String acessToken = jwtTokenService.generateToken(
+        String accessToken = jwtTokenService.generateToken(
                 refreshTokenFromCookie.getUser(),
                 RequestUtils.getRequestIp(request),
                 RequestUtils.getRequestUserAgent(request)
@@ -126,7 +126,7 @@ public class AuthController {
                         refreshTokenFromCookie.getUser().getId(),
                         refreshTokenFromCookie.getUser().getEmail(),
                         refreshTokenFromCookie.getUser().getRole(),
-                        acessToken
+                        accessToken
                 )
         );
     }
@@ -134,9 +134,10 @@ public class AuthController {
     private void setRefreshTokenCookies(HttpServletResponse response, UUID token) {
         Cookie cookie = new Cookie("refreshToken", token.toString());
         cookie.setHttpOnly(true);
-        cookie.setSecure(true);
+        cookie.setSecure(false);
         cookie.setPath("/auth/refresh-token");
-        cookie.setMaxAge(15 * 60 * 24 * 30);
+        cookie.setMaxAge(15 * 24 * 60 * 6);
+        cookie.setAttribute("SameSite", "Strict");
         response.addCookie(cookie);
     }
 }
