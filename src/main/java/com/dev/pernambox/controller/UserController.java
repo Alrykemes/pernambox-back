@@ -60,7 +60,7 @@ public class UserController {
 
     @GetMapping("info/{userId}")
     @Operation(summary = "Retorna usuário pelo id")
-    public ResponseEntity<UserResponseDto> getUserById(@org.hibernate.validator.constraints.UUID @PathVariable UUID userId) {
+    public ResponseEntity<UserResponseDto> getUserById(@PathVariable UUID userId) {
         return ResponseEntity.ok(new UserResponseDto(userService.getUserById(userId)));
     }
 
