@@ -95,7 +95,7 @@ CREATE TYPE operation_target AS ENUM ('ADDRESS','UNIT','USER','PRODUCT','RESOURC
 CREATE TABLE operation
 (
     id               SERIAL PRIMARY KEY,
-    operation        operation_type   NOT NULL,
+    operation_type   operation_type   NOT NULL,
     operation_date   TIMESTAMP        NOT NULL,
     operation_target operation_target NOT NULL,
     description      VARCHAR(255)     NOT NULL,
