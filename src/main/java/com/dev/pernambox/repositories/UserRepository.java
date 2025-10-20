@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,4 +19,10 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Transactional
     @Query("UPDATE User u SET u.password = :password WHERE u.id = :userId")
     int updatePasswordById(@Param("userId") UUID userId,@Param("password") String password);
+
+    @Query("SELECT u FROM User u WHERE u.unit.id = :unitId")
+    List<User> getAllByUnitId(@Param("unitId") UUID unitId);
+
+    @Query("SELECT u FROM User u")
+    List<User> getAll();
 }

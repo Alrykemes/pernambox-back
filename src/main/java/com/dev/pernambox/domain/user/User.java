@@ -1,5 +1,6 @@
 package com.dev.pernambox.domain.user;
 
+import com.dev.pernambox.domain.user.dtos.UserRequestDto;
 import com.dev.pernambox.domain.user.enums.Role;
 import com.dev.pernambox.domain.unit.Unit;
 import jakarta.persistence.*;
@@ -70,5 +71,13 @@ public class User implements UserDetails {
     @Override
     public String getUsername() {
         return this.email;
+    }
+
+    public User(UserRequestDto requestDto) {
+        this.name = requestDto.name();
+        this.email = requestDto.email();
+        this.cpf = requestDto.cpf();
+        this.phone = requestDto.phone();
+        this.role = requestDto.role();
     }
 }

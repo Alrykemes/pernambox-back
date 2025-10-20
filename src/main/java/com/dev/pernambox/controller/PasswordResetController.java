@@ -50,7 +50,7 @@ public class PasswordResetController {
     public ResponseEntity<VerifyOTPResponseDto> validateOTP(@Valid @RequestBody VerifyOTPRequestDto body, HttpServletRequest request) {
         redisService.validateOtp(body.userId(), body.otpCode());
 
-        User user = userService.getUserById(body.userId().toString());
+        User user = userService.getUserById(body.userId());
 
         String token = jwtTokenService.generatePasswordResetToken(
                 body.userId(),
