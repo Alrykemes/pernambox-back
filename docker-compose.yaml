@@ -17,8 +17,27 @@ services:
     ports:
       - "6379:6379"
     command: [ "redis-server", "--appendonly", "yes" ] # persiste os dados
+    environment:
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes:
       - pernambox_redis_data:/data
+  backend:
+    build: .
+    container_name: backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    restart: unless-stopped
+    env_file:
+      - .env
+  frontend:
+    build: ../pernambox-front/
+    container_name: frontend
+    ports:
+      - "3000:80"
+    restart: unless-stopped
 volumes:
   pernambox_pgdata:
   pernambox_redis_data:
