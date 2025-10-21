@@ -1,5 +1,6 @@
 package com.dev.pernambox.domain.operation;
 
+import com.dev.pernambox.domain.operation.dtos.OperationRequestDto;
 import com.dev.pernambox.domain.operation.enums.Operation_Target;
 import com.dev.pernambox.domain.operation.enums.Operation_Type;
 import jakarta.persistence.*;
@@ -45,4 +46,14 @@ public class Operation {
 
     @Column(name = "users_id",nullable = false)
     private UUID users_id;
+
+    public Operation(OperationRequestDto dto) {
+        this.operation_type = dto.operation_type();
+        this.operation_date = dto.operation_date();
+        this.operation_target = dto.operation_target();
+        this.description = dto.description();
+        this.target_id = dto.target_id();
+        this.unit_id = dto.unit_id();
+        this.users_id = dto.users_id();
+    }
 }

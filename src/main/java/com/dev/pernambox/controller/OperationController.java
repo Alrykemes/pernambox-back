@@ -1,5 +1,6 @@
 package com.dev.pernambox.controller;
 
+import com.dev.pernambox.domain.operation.dtos.OperationRequestDto;
 import com.dev.pernambox.service.OperationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,15 +35,12 @@ public class OperationController {
     }
 
     @PostMapping("")
-    public ResponseEntity<Boolean> createOperation(@Valid @RequestBody com.dev.pernambox.domain.operation.Operation operation)
+    public ResponseEntity<Boolean> createOperation(@Valid @RequestBody OperationRequestDto dto)
     {
-        try{
-            var response = operationService.createOperation(operation);
+        com.dev.pernambox.domain.operation.Operation operation = new com.dev.pernambox.domain.operation.Operation(dto);
 
-            return ResponseEntity.ok(response);
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().build();
-        }
+        var response = operationService.createOperation(operation);
+
+        return ResponseEntity.ok(response);
     }
 }
