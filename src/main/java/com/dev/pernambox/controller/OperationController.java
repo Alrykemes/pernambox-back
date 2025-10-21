@@ -9,7 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -23,24 +25,20 @@ public class OperationController {
 
     @GetMapping("")
     @Operation(summary = "Lista operações", description = "Faz a listagem de todas as operações realizadas")
-    public ResponseEntity<List<com.dev.pernambox.domain.operation.Operation>> getAllOperations()
-    {
-        try{
-            operationService.getAllOperations();
-            return ResponseEntity.ok(operationService.getAllOperations());
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<List<com.dev.pernambox.domain.operation.Operation>> getAllOperations() {
+        return ResponseEntity.ok(operationService.getAllOperations());
     }
 
     @PostMapping("")
-    public ResponseEntity<Boolean> createOperation(@Valid @RequestBody OperationRequestDto dto)
-    {
-        com.dev.pernambox.domain.operation.Operation operation = new com.dev.pernambox.domain.operation.Operation(dto);
-
-        var response = operationService.createOperation(operation);
-
-        return ResponseEntity.ok(response);
+    public ResponseEntity<com.dev.pernambox.domain.operation.Operation> createOperation(@Valid @RequestBody OperationRequestDto body, UriComponentsBuilder uriComponentsBuilder) {
+        com.dev.pernambox.domain.operation.Operation newOperation = operationService.createOperation(body);
+        URI uri = uriComponentsBuilder.path("/operation/info/{id}").buildAndExpand(newOperation.getId()).toUri();
+        return ResponseEntity.created(uri).body(newOperation);
     }
+
+//    se for mudar a forma do get muda no create tbm a URI
+//    @GetMapping("/info/{id}")
+//    public ResponseEntity<com.dev.pernambox.domain.operation.Operation> getOperationById(@PathVariable Integer id) {
+//
+//    }
 }

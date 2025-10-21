@@ -1,6 +1,6 @@
 package com.dev.pernambox.domain.operation.enums;
 
-public enum Operation_Type {
+public enum OperationType {
     CREATE,
     UPDATE,
     DELETE

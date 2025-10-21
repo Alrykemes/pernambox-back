@@ -1,6 +1,6 @@
 package com.dev.pernambox.domain.operation.enums;
 
-public enum Operation_Target {
+public enum OperationTarget {
     ADDRESS,
     UNIT,
     USER,

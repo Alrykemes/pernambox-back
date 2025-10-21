@@ -1,8 +1,10 @@
 package com.dev.pernambox.domain.operation;
 
 import com.dev.pernambox.domain.operation.dtos.OperationRequestDto;
-import com.dev.pernambox.domain.operation.enums.Operation_Target;
-import com.dev.pernambox.domain.operation.enums.Operation_Type;
+import com.dev.pernambox.domain.operation.enums.OperationTarget;
+import com.dev.pernambox.domain.operation.enums.OperationType;
+import com.dev.pernambox.domain.unit.Unit;
+import com.dev.pernambox.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,34 +28,34 @@ public class Operation {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "operation_type", columnDefinition = "operation_type", nullable = false)
-    private Operation_Type operation_type;
+    private OperationType operationType;
 
     @Column(name = "operation_date", nullable = false)
-    private Date operation_date;
+    private Date operationDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "operation_target", columnDefinition = "operation_target", nullable = false)
-    private Operation_Target operation_target;
+    private OperationTarget operationTarget;
 
     @Column(name = "description", nullable = false)
     private String description;
 
     @Column(name = "target_id", nullable = false)
-    private UUID target_id;
+    private UUID targetId;
 
-    @Column(name = "unit_id", nullable = false)
-    private UUID unit_id;
+    @JoinColumn(name = "unit_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Unit unit;
 
-    @Column(name = "users_id",nullable = false)
-    private UUID users_id;
+    @JoinColumn(name = "users_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private User user;
 
     public Operation(OperationRequestDto dto) {
-        this.operation_type = dto.operation_type();
-        this.operation_date = dto.operation_date();
-        this.operation_target = dto.operation_target();
+        this.operationType = dto.operationType();
+        this.operationDate = dto.operationDate();
+        this.operationTarget = dto.operationTarget();
         this.description = dto.description();
-        this.target_id = dto.target_id();
-        this.unit_id = dto.unit_id();
-        this.users_id = dto.users_id();
+        this.targetId = dto.targetId();
     }
 }

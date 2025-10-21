@@ -1,22 +1,29 @@
 package com.dev.pernambox.domain.operation.dtos;
 
 import com.dev.pernambox.domain.operation.Operation;
-import com.dev.pernambox.domain.operation.enums.Operation_Target;
-import com.dev.pernambox.domain.operation.enums.Operation_Type;
+import com.dev.pernambox.domain.operation.enums.OperationTarget;
+import com.dev.pernambox.domain.operation.enums.OperationType;
+import jakarta.validation.constraints.NotBlank;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 import java.util.UUID;
 
 public record OperationRequestDto(
-        Operation_Type operation_type,
-        Date operation_date,
-        Operation_Target operation_target,
+        @NotBlank(message = "operationType é necessário")
+        OperationType operationType,
+        @NotBlank(message = "operationDate é necessário")
+        @DateTimeFormat(pattern = "yyyy-MM-dd")
+        Date operationDate,
+        @NotBlank(message = "operationTarget é necessário")
+        OperationTarget operationTarget,
+        @NotBlank(message = "description é necessário")
         String description,
-        UUID target_id,
-        UUID unit_id,
-        UUID users_id
+        @NotBlank(message = "targetId é necessário")
+        UUID targetId,
+        @NotBlank(message = "unitId é necessário")
+        UUID unitId,
+        @NotBlank(message = "userId é necessário")
+        UUID userId
 ) {
-    public OperationRequestDto(Operation operation) {
-        this(operation.getOperation_type(), operation.getOperation_date(), operation.getOperation_target(), operation.getDescription(), operation.getTarget_id(), operation.getUnit_id(), operation.getUsers_id());
-    }
 }
