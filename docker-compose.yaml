@@ -11,6 +11,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    networks:
+      - pernambox-net
   redis:
     image: redis:7.2
     container_name: redis
@@ -22,22 +24,41 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes:
       - pernambox_redis_data:/data
-  backend:
-    build: .
-    container_name: backend
-    ports:
-      - "8080:8080"
+    networks:
+      - pernambox-net
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio
+    command: server /data --console-address ":9001"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
-    restart: unless-stopped
-    env_file:
-      - .env
-  frontend:
-    build: ../pernambox-front/
-    container_name: frontend
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: senha123
+    volumes:
+      - ./minio-data:/data
+    networks:
+      - pernambox-net
+    # Porta de acesso interna (não exposta)
     ports:
-      - "3000:80"
-    restart: unless-stopped
+      - "9000"
+      - "9001"
+    # Se quiser acesso web (opcional, para setup)
+    # ports:
+    #   - "9001:9001"
+#  backend:
+#    build: .
+#    container_name: backend
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=prod
+#    restart: unless-stopped
+#    env_file:
+#      - .env
+#    networks:
+#      - pernambox-net
 volumes:
   pernambox_pgdata:
   pernambox_redis_data:
+networks:
+  pernambox-net:
+    driver: bridge

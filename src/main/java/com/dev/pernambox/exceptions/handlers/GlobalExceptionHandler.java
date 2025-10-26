@@ -1,10 +1,8 @@
 package com.dev.pernambox.exceptions.handlers;
 
-import com.dev.pernambox.exceptions.AuthenticationException;
-import com.dev.pernambox.exceptions.AuthorizationException;
-import com.dev.pernambox.exceptions.NotFoundException;
-import com.dev.pernambox.exceptions.PasswordResetException;
+import com.dev.pernambox.exceptions.*;
 import com.dev.pernambox.exceptions.dtos.ErrorResponseDto;
+import io.minio.errors.MinioException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +59,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponseDto> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, HttpServletRequest request) {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Body error", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(MinioException.class)
+    public ResponseEntity<ErrorResponseDto> handleMinioException(MinioException ex, HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Error to upload Files", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(UploadFilesException.class)
+    public ResponseEntity<ErrorResponseDto> handleUploadFilesException(UploadFilesException ex, HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Error to upload Files", ex.getMessage(), request);
     }
 
     private ResponseEntity<ErrorResponseDto> buildErrorResponse(HttpStatus status, String title, String message, HttpServletRequest request) {
