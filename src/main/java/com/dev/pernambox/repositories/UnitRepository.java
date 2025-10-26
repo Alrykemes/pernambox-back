@@ -11,7 +11,9 @@ public interface UnitRepository extends JpaRepository<Unit, UUID> {
 
     Unit save(Unit unit);
 
-    Unit edit(Unit unit);
-
     void delete(Unit unit);
+
+    Unit findByName(String name);
+
+    Unit findUnitById(UUID id);
 }
