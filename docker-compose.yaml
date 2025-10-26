@@ -37,7 +37,7 @@ services:
       - ./minio-data:/data
     networks:
       - pernambox-net
-    # Porta de acesso interna (não exposta)
+    # Porta de acesso interna ("ports" em dev e "expose" em prod)
     ports:
       - "9000"
       - "9001"
