@@ -1,6 +1,8 @@
 package com.dev.pernambox.domain.user;
 
+import com.dev.pernambox.domain.user.converters.RoleConverter;
 import com.dev.pernambox.domain.user.dtos.UserRequestDto;
+import com.dev.pernambox.domain.user.enums.PostgreRoleEnum;
 import com.dev.pernambox.domain.user.enums.Role;
 import com.dev.pernambox.domain.unit.Unit;
 import jakarta.persistence.*;
@@ -8,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -44,8 +47,9 @@ public class User implements UserDetails {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", columnDefinition = "role", nullable = false)
+    @Convert(converter = RoleConverter.class)
+    @Type(PostgreRoleEnum.class)
+    @Column(name = "role", columnDefinition = "role_type", nullable = false)
     private Role role;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)

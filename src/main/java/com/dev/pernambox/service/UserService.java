@@ -43,6 +43,10 @@ public class UserService {
         return this.userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
     }
 
+    public List<User> getUserByName(String name) {
+        return this.userRepository.getUserByName(name);
+    }
+
     public boolean changeUserPassword(UUID userId, String password) {
         return this.userRepository.updatePasswordById(userId, passwordEncoder.encode(password)) > 0;
     }
@@ -72,6 +76,8 @@ public class UserService {
 
         setUpdateValues(updateDto, user);
 
+        this.verifySamePassword(user.getId(), updateDto.newPassword());
+
         return this.userRepository.save(user);
     }
 
@@ -81,7 +87,7 @@ public class UserService {
         user.setRole(updateDto.role() == null ? user.getRole() : updateDto.role());
         user.setCpf(updateDto.cpf() == null ? user.getCpf() : updateDto.cpf());
         user.setPhone(updateDto.phone() == null ? user.getPhone() : updateDto.phone());
-        user.setPassword(updateDto.password() == null ? user.getPassword() : passwordEncoder.encode(updateDto.password()));
+        user.setPassword(updateDto.newPassword() == null ? user.getPassword() : passwordEncoder.encode(updateDto.newPassword()));
     }
 
     public List<User> getAllUsersByUnitId(UUID unitId) {

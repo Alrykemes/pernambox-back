@@ -64,6 +64,12 @@ public class UserController {
         return ResponseEntity.ok(new UserResponseDto(userService.getUserById(userId)));
     }
 
+    @GetMapping()
+    @Operation(summary = "Retorna usuário pelo nome")
+    public ResponseEntity<List<UserResponseDto>> getUserByName(@RequestParam String name) {
+        return ResponseEntity.ok(userService.getUserByName(name).stream().map(UserResponseDto::new).toList());
+    }
+
     @GetMapping("/all-in-unit/{unitId}")
     @Operation(summary = "Retorna todos usuários pelo id da unidade")
     public ResponseEntity<List<UserResponseDto>> getAllUsersByUnitId(@PathVariable UUID unitId) {
