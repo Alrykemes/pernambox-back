@@ -1,7 +1,9 @@
 package com.dev.pernambox.service;
 
 import io.minio.*;
+import io.minio.errors.MinioException;
 import io.minio.http.Method;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +11,7 @@ import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Slf4j
 public class MinioService {
 
     private final MinioClient minioClient;
@@ -19,7 +22,7 @@ public class MinioService {
             @Value("${MINIO_ACCESS_KEY}") String accessKey,
             @Value("${MINIO_SECRET_KEY}") String secretKey,
             @Value("${MINIO_BUCKET}") String bucket
-    ) {
+    ) throws MinioException {
         this.minioClient = MinioClient.builder()
                 .endpoint(endpoint)
                 .credentials(accessKey, secretKey)
@@ -32,7 +35,7 @@ public class MinioService {
     /**
      * Cria o bucket se ele não existir
      */
-    private void inicializarBucket() {
+    private void inicializarBucket() throws MinioException {
         try {
             boolean existe = minioClient.bucketExists(
                     BucketExistsArgs.builder().bucket(bucket).build()
@@ -42,7 +45,7 @@ public class MinioService {
                 minioClient.makeBucket(
                         MakeBucketArgs.builder().bucket(bucket).build()
                 );
-                System.out.println("[MinIO] Bucket criado: " + bucket);
+                log.info("[MinIO] Bucket criado: {}", bucket);
                 // Define política de acesso privada
                 String privatePolicy = """
                         {
@@ -64,12 +67,13 @@ public class MinioService {
                                 .config(privatePolicy)
                                 .build()
                 );
-                System.out.println("[MinIO] Política privada aplicada ao bucket: " + bucket);
+                log.info("[MinIO] Política privada aplicada ao bucket: {}", bucket);
             } else {
-                System.out.println("[MinIO] Bucket já existente: " + bucket);
+                log.info("[MinIO] Bucket já existente: {}", bucket);
             }
         } catch (Exception e) {
-            throw new RuntimeException("Falha ao inicializar bucket MinIO: " + e.getMessage(), e);
+            log.info("Falha ao inicializar bucket MinIO: {}", e.getMessage());
+            throw new MinioException("Falha ao inicializar bucket MinIO: " + e.getMessage());
         }
     }
 

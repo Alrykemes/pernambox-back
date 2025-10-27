@@ -7,6 +7,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.Claim;
 import com.dev.pernambox.domain.user.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class JwtTokenService {
@@ -65,22 +67,17 @@ public class JwtTokenService {
             );
 
             if (!this.validatePayload.get("ip").asString().equals(ip)) {
-                // Log error
-
+                log.warn("IP: {} \n User agent: {}, \n Tentando utilizar Jwt gerado por outro usuário", ip, userAgent);
                 throw new SecurityException("Ip de requisição diferente do token");
             }
 
             if (!this.validatePayload.get("userAgent").asString().equals(userAgent)) {
-                // Log error
-
+                log.warn("IP: {} \n User agent: {}, \n Tentando utilizar Jwt gerado por outro usuário", ip, userAgent);
                 throw new SecurityException("User Agent de requisição diferente do token");
             }
 
             return this.validatePayload;
         } catch (JWTVerificationException exception) {
-            // Log error
-
-            exception.printStackTrace();
             throw new SecurityException("Error in JWT validation");
         }
     }
