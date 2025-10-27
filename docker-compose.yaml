@@ -44,6 +44,70 @@ services:
     # Se quiser acesso web (opcional, para setup)
     # ports:
     #   - "9001:9001"
+  prometheus:
+    image: prom/prometheus:v3.0.0
+    container_name: prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=15d"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - pernambox-net
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    restart: unless-stopped
+
+  loki:
+      image: grafana/loki:2.9.0
+      container_name: loki
+      command: -config.file=/etc/loki/local-config.yaml
+      volumes:
+        - ./loki-config.yml:/etc/loki/config.yml
+        - ./loki_data:/loki
+      networks:
+        - pernambox-net
+      security_opt:
+        - no-new-privileges:true
+      read_only: true
+      restart: unless-stopped
+      expose:
+        - "3100"
+
+  promtail:
+      image: grafana/promtail:2.9.0
+      container_name: promtail
+      command: -config.file=/etc/promtail/config.yml
+      volumes:
+        - /var/log/spring/:/var/log/spring/:ro
+        - ./observability/promtail-config.yml:/etc/promtail/config.yml:ro
+      networks:
+        - pernambox-net
+      security_opt:
+        - no-new-privileges:true
+      restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASS}
+      - GF_SERVER_ROOT_URL=http://localhost:3001
+      - GF_SECURITY_ALLOW_EMBEDDING=false
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_AUTH_BASIC_ENABLED=true
+    volumes:
+      - ./grafana_data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - pernambox-net
 #  backend:
 #    build: .
 #    container_name: backend
@@ -59,6 +123,8 @@ services:
 volumes:
   pernambox_pgdata:
   pernambox_redis_data:
+  loki_data:
+  grafana_data:
 networks:
   pernambox-net:
     driver: bridge

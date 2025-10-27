@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +30,6 @@ public class FileController {
             try {
                 minioService.uploadFile(file.getOriginalFilename(), file.getInputStream(), file.getContentType());
                 fileNames.add(file.getOriginalFilename());
-                // log
             } catch (Exception e) {
                 throw new UploadFilesException("Erro ao fazer upload do arquivo " + file.getOriginalFilename());
             }
