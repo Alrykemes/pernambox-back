@@ -60,7 +60,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handleNotFoundException(NotFoundException ex, HttpServletRequest request) {
-        log.error("Not Found: {}", ex.getMessage());
+        log.error("Not Found in DB: {}", ex.getMessage());
         return buildErrorResponse(HttpStatus.NOT_FOUND, "Not Found Error", ex.getMessage(), request);
     }
 

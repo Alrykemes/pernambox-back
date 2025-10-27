@@ -48,7 +48,7 @@ public class JwtTokenService {
                     .withExpiresAt(this.generateExpirationDateMinutes())
                     .sign(algorithm);
         } catch (JWTCreationException ex) {
-            throw new SecurityException();
+            throw new SecurityException("Error ao criar JWT de Login!");
         }
     }
 
@@ -78,7 +78,7 @@ public class JwtTokenService {
 
             return this.validatePayload;
         } catch (JWTVerificationException exception) {
-            throw new SecurityException("Error in JWT validation");
+            throw new SecurityException("Erro na Validação do token JWT");
         }
     }
 
@@ -101,7 +101,7 @@ public class JwtTokenService {
                     .withExpiresAt(generateExpirationDateMinutes())
                     .sign(algorithm);
         } catch (JWTCreationException ex) {
-            throw new SecurityException("Error creating password reset token");
+            throw new SecurityException("Error ao criar JWT para Alterar senha!");
         }
     }
 
