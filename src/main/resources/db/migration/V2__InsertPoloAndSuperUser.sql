@@ -3,7 +3,7 @@
 -- 1) Endereço
 INSERT INTO address (id, number, street, district, city, state, zip_code, complement)
 VALUES (uuid_generate_v4(),
-        123,
+        '123',
         'Av. Paulista',
         'Bela Vista',
         'São Paulo',
@@ -17,7 +17,7 @@ ON CONFLICT DO NOTHING;
 INSERT INTO unit (id, name, address_id)
 VALUES (uuid_generate_v4(),
         'Unidade Central',
-        (SELECT id FROM address WHERE street = 'Av. Paulista' AND number = 123))
+        (SELECT id FROM address WHERE street = 'Av. Paulista' AND number = '123'))
 ON CONFLICT DO NOTHING;
 
 -- 3) Usuário (vinculado à unidade criada)

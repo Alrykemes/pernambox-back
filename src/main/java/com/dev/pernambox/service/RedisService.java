@@ -30,7 +30,7 @@ public class RedisService {
         if (otpCode.equals(otpCodeRedis)) {
             redisTemplate.delete(key);
         } else {
-            throw new PasswordResetException("OTP code is invalid or expired");
+            throw new PasswordResetException("Código Inválido ou expirado!");
         }
     }
 
@@ -46,7 +46,7 @@ public class RedisService {
         if (token.equals(tokenRedis)) {
             redisTemplate.delete(key);
         } else {
-            throw new PasswordResetException("Token is invalid or expired");
+            throw new PasswordResetException("Token Inválido ou Expirado!");
         }
     }
 }

@@ -32,3 +32,11 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Minio ###
+minio-data/
+
+### Observability ###
+loki_data/
+loki-config.yml/
+grafana_data/
