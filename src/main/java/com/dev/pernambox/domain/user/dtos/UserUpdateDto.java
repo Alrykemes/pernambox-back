@@ -25,8 +25,6 @@ public record UserUpdateDto(
         )
         @Size(min = 8, max = 255, message = "A senha deve ter entre 8 e 255 caracteres")
         String password,
-        @NotNull(message = "unitId é necessário")
-        UUID unitId,
         @Pattern(
                 regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&._-])[A-Za-z\\d@$!%*`?&.#^'_-]{8,}$",
                 message = "A senha deve conter ao menos uma letra maiúscula, uma letra minúscula, um número e um caractere especial, com no mínimo 8 caracteres."

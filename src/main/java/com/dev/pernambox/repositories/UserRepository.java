@@ -20,9 +20,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("UPDATE User u SET u.password = :password WHERE u.id = :userId")
     int updatePasswordById(@Param("userId") UUID userId,@Param("password") String password);
 
-    @Query("SELECT u FROM User u WHERE u.unit.id = :unitId")
-    List<User> getAllByUnitId(@Param("unitId") UUID unitId);
-
     @Query("SELECT u FROM User u")
     List<User> getAll();
 

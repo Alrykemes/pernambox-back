@@ -5,6 +5,7 @@ import com.dev.pernambox.domain.user.dtos.UserRequestDto;
 import com.dev.pernambox.domain.user.dtos.UserResponseDto;
 import com.dev.pernambox.domain.user.dtos.UserUpdateDto;
 import com.dev.pernambox.domain.user.enums.Role;
+import com.dev.pernambox.exceptions.AuthorizationException;
 import com.dev.pernambox.service.EmailService;
 import com.dev.pernambox.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,11 +38,11 @@ public class UserController {
         User user = (User) authentication.getPrincipal();
 
         if (user.getRole() == Role.USER) {
-            throw new SecurityException("Você não tem Autorização para criar usuários!");
+            throw new AuthorizationException("Você não tem Autorização para criar usuários!");
         }
 
         if((body.role().equals(Role.MASTER_ADM) || (body.role().equals(Role.UNIT_ADM))) && !user.getRole().equals(Role.MASTER_ADM)) {
-            throw new SecurityException("Apenas Master Admins podem criar outros Admins!");
+            throw new AuthorizationException("Apenas Master Admins podem criar outros Admins!");
         }
 
         User newUser = userService.save(body);
@@ -70,12 +71,6 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserByName(name).stream().map(UserResponseDto::new).toList());
     }
 
-    @GetMapping("/all-in-unit/{unitId}")
-    @Operation(summary = "Retorna todos usuários pelo id da unidade")
-    public ResponseEntity<List<UserResponseDto>> getAllUsersByUnitId(@PathVariable UUID unitId) {
-        return ResponseEntity.ok(userService.getAllUsersByUnitId(unitId).stream().map(UserResponseDto::new).toList());
-    }
-
     @GetMapping("/all")
     @Operation(summary = "Retorna todos usuários")
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
@@ -88,7 +83,7 @@ public class UserController {
         User user = (User) authentication.getPrincipal();
 
         if (!user.getId().equals(body.userId())) {
-            throw new SecurityException("Não é possível alterar outro usuário por esta rota!");
+            throw new AuthorizationException("Não é possível alterar outro usuário por esta rota!");
         }
 
         return ResponseEntity.ok(new UserResponseDto(userService.update(body)));
@@ -101,7 +96,7 @@ public class UserController {
 
         if (user.getRole() == Role.USER) {
             if (!user.getId().equals(body.userId())) {
-                throw new SecurityException("Você não tem Autorização para alterar outro usuário");
+                throw new AuthorizationException("Você não tem Autorização para alterar outro usuário");
             }
         }
 

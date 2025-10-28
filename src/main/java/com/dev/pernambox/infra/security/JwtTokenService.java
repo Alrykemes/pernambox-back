@@ -34,7 +34,6 @@ public class JwtTokenService {
             this.createPayload.put("userId", user.getId().toString());
             this.createPayload.put("email", user.getEmail());
             this.createPayload.put("role", user.getRole().toString());
-            this.createPayload.put("unitId", user.getUnit().getId().toString());
             this.createPayload.put("ip", ip);
             this.createPayload.put("userAgent", userAgent);
 

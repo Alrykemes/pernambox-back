@@ -1,14 +1,13 @@
 package com.dev.pernambox.service;
 
-import com.dev.pernambox.domain.unit.Unit;
 import com.dev.pernambox.domain.user.User;
 import com.dev.pernambox.domain.user.dtos.UserRequestDto;
 import com.dev.pernambox.domain.user.dtos.UserUpdateDto;
+import com.dev.pernambox.exceptions.AuthorizationException;
 import com.dev.pernambox.exceptions.NotFoundException;
 import com.dev.pernambox.exceptions.PasswordResetException;
 import com.dev.pernambox.exceptions.UpdateEntityException;
 import com.dev.pernambox.repositories.UserRepository;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,9 +27,6 @@ public class UserService {
     public User save(UserRequestDto userRequestDto) {
         User newUser = new User(userRequestDto);
         newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
-
-        // pegar a unidade verificando se é válida pra depois jogar pro service
-//        Unit unit = unitService.getUnitById(body.unit_Id());
 
         return this.userRepository.save(newUser);
     }
@@ -59,24 +55,18 @@ public class UserService {
         }
     }
 
-    public User updateByAdmin(UserUpdateDto updateDto) {
-        User user = this.getUserById(updateDto.userId());
-        setUpdateValues(updateDto, user);
-        user.setUnit(updateDto.unitId() == null ? user.getUnit() : /*pega do unit service*/ user.getUnit());
-
-        return this.userRepository.save(user);
-    }
-
     public User update(UserUpdateDto updateDto) {
         User user = this.getUserById(updateDto.userId());
 
         if(!passwordEncoder.matches(updateDto.password(), user.getPassword())) {
-            throw new UpdateEntityException("Senha Incorreta!");
+            throw new AuthorizationException("Senha Incorreta!");
         }
 
         setUpdateValues(updateDto, user);
 
-        this.verifySamePassword(user.getId(), updateDto.newPassword());
+        if(updateDto.newPassword().equals(updateDto.password())) {
+            throw new UpdateEntityException("A nova senha não pode ser ingual a antiga!");
+        }
 
         return this.userRepository.save(user);
     }
@@ -88,10 +78,6 @@ public class UserService {
         user.setCpf(updateDto.cpf() == null ? user.getCpf() : updateDto.cpf());
         user.setPhone(updateDto.phone() == null ? user.getPhone() : updateDto.phone());
         user.setPassword(updateDto.newPassword() == null ? user.getPassword() : passwordEncoder.encode(updateDto.newPassword()));
-    }
-
-    public List<User> getAllUsersByUnitId(UUID unitId) {
-        return userRepository.getAllByUnitId(unitId);
     }
 
     public List<User> getAllUsers() {
