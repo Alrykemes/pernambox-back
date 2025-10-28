@@ -52,10 +52,6 @@ public class User implements UserDetails {
     @Column(name = "role", columnDefinition = "role_type", nullable = false)
     private Role role;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "unit_id", nullable = false)
-    private Unit unit;
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (this.role == Role.MASTER_ADM) {
