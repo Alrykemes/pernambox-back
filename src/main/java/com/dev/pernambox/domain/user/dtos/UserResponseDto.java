@@ -12,10 +12,9 @@ public record UserResponseDto(
         String cpf,
         String email,
         String phone,
-        Role role,
-        Unit unit
+        Role role
 ) {
     public UserResponseDto(User user) {
-        this(user.getId(), user.getName(), user.getCpf(), user.getEmail(), user.getPhone(), user.getRole(), user.getUnit());
+        this(user.getId(), user.getName(), user.getCpf(), user.getEmail(), user.getPhone(), user.getRole());
     }
 }
