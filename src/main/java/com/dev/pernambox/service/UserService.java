@@ -32,7 +32,7 @@ public class UserService {
         User user = this.getUserById(userId.toString());
 
         if(passwordEncoder.matches(password, user.getPassword())) {
-            throw new PasswordResetException("New password cannot be the same as the old password");
+            throw new PasswordResetException("A nova senha não pode ser igual a antiga senha!");
         }
     }
 }

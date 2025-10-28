@@ -12,6 +12,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,6 +28,7 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityFilter extends OncePerRequestFilter {
 
     private final UserDetailsService userDetailsService;
@@ -44,17 +46,27 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         if (token != null) {
             try {
+                String userAgent = RequestUtils.getRequestUserAgent(request);
+                String ip = RequestUtils.getRequestIp(request);
+
                 Map<String, Claim> payloadToken = tokenService.validateToken(
                         token,
-                        RequestUtils.getRequestIp(request),
-                        RequestUtils.getRequestUserAgent(request));
+                        ip,
+                        userAgent);
 
                 if ((request.getRequestURI().equals("/auth/password-reset") || request.getServletPath().equals("/auth/password-reset"))
                         && request.getMethod().equals("PATCH")) {
                     if (!payloadToken.get("iss").asString().equals("password-reset")) {
-                        // Log error
+                        log.warn("IP: {} \n User agent: {}, \n Tentando utilizar Jwt inválida para alterar senha", ip, userAgent);
+                        handleJwtError(response, request, HttpStatus.UNAUTHORIZED, new PasswordResetException("Invalid token for reset password"));
+                        return;
+                    }
+                }
 
-                        // invalid token if not token for password reset
+                if ((request.getRequestURI().equals("/auth/login") || request.getServletPath().equals("/auth/login"))
+                        && request.getMethod().equals("POST")) {
+                    if (!payloadToken.get("iss").asString().equals("login-auth")) {
+                        log.warn("IP: {} \n User agent: {}, \n Tentando utilizar Jwt inválida para login", ip, userAgent);
                         handleJwtError(response, request, HttpStatus.UNAUTHORIZED, new PasswordResetException("Invalid token for reset password"));
                         return;
                     }
@@ -64,13 +76,13 @@ public class SecurityFilter extends OncePerRequestFilter {
                 var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (SecurityException ex) {
-                // Log error
-
+                log.error("Authentication Error: {}", ex.getMessage());
                 handleJwtError(response, request, HttpStatus.UNAUTHORIZED, ex);
                 return;
             } catch (Exception e) {
-                // Log error
-
+                StackTraceElement origin = e.getStackTrace()[0];
+                log.error("Erro no processo de Autenticação: {} \n Classe: {} \n Método: {} \n Linha: {}",
+                        e.getMessage(), origin.getClass(), origin.getMethodName(), origin.getLineNumber());
                 handleJwtError(response, request, HttpStatus.INTERNAL_SERVER_ERROR, e);
                 return;
             }

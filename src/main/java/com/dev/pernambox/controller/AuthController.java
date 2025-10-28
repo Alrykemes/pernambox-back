@@ -49,7 +49,7 @@ public class AuthController {
         User user = userService.getUserByEmail(body.email());
 
         if (!passwordEncoder.matches(body.password(), user.getPassword())) {
-            throw new AuthenticationException("Invalid credentials");
+            throw new AuthenticationException("Credenciais de Login Inválidas!");
         }
 
         String accessToken = jwtTokenService.generateToken(
@@ -81,7 +81,7 @@ public class AuthController {
     @Operation(summary = "Verifica autenticação do usuário", description = "Verifica autenticação do usuário a partir da" +
             " jwt, e retorna todas as informações dele")
     public ResponseEntity<UserResponseDto> me(Authentication authentication) {
-        if (authentication == null) throw new AuthenticationException("Auth Required to this Path");
+        if (authentication == null) throw new AuthenticationException("Authenticação é necessária nesse caminho!");
 
         User user = (User) authentication.getPrincipal();
 
@@ -98,11 +98,11 @@ public class AuthController {
         RefreshToken refreshTokenFromDb = refreshTokenService.findByUserId(refreshTokenFromCookie.getUser().getId());
 
         if (!refreshTokenFromDb.getToken().equals(refreshTokenFromCookie.getToken())) {
-            throw new AuthenticationException("RefreshToken is Invalid!");
+            throw new AuthenticationException("O RefreshToken é inválido!");
         }
 
         if (refreshTokenFromDb.getExpirationDate().isBefore(LocalDateTime.now())) {
-            throw new AuthenticationException("RefreshToken is Expired!");
+            throw new AuthenticationException("O RefreshToken está Expirado!");
         }
 
         UUID newToken = UUID.randomUUID();
