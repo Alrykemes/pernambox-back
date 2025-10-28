@@ -1,5 +1,6 @@
 package com.dev.pernambox.domain.address;
 
+import com.dev.pernambox.domain.address.dtos.AddressRequestDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,7 +13,6 @@ import java.util.UUID;
 @Table(name = "address_unit")
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
 public class Address {
     @Id
@@ -40,4 +40,18 @@ public class Address {
 
     @Column(nullable = false)
     private String complement;
+
+    public Address(AddressRequestDto dto) {
+        this.number = dto.number();
+        this.street = dto.street();
+        this.district = dto.district();
+        this.city = dto.city();
+        this.state = dto.state();
+        this.zipCode = dto.zipCode();
+        this.complement = dto.complement();
+    }
+
+    public Address() {
+
+    }
 }
