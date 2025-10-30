@@ -1,7 +1,9 @@
 package com.dev.pernambox.service;
 
+import com.dev.pernambox.domain.address.Address;
 import com.dev.pernambox.domain.unit.Unit;
 import com.dev.pernambox.domain.unit.dtos.UnitRequestDto;
+import com.dev.pernambox.repositories.AddressRepository;
 import com.dev.pernambox.repositories.UnitRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import java.util.UUID;
 @Service
 public class UnitService {
     private final UnitRepository unitRepository;
+    private final AddressRepository addressRepository;
 
     public List<Unit> findAll() {
         return unitRepository.findAll();
@@ -23,7 +26,16 @@ public class UnitService {
         {
             Unit unit = new Unit();
             unit.setName(unitDto.name());
-            unit.setAddress(unitDto.address());
+
+            Address addressUnit = addressRepository.findById(unitDto.addressId()).orElse(null);
+
+            if(addressUnit == null){
+                throw new Exception("Address not found");
+            }
+            if(unitRepository.findUnitByAddress(addressUnit) != null){
+                throw new Exception("Unit with this address already exists");
+            }
+            unit.setAddress(addressUnit);
 
             // Verifica se já existe uma outra unidade com o mesmo nome
             if (unitRepository.findByName(unit.getName()) != null) {
@@ -36,8 +48,24 @@ public class UnitService {
         }
     }
 
-    public Unit updateUnit(Unit unit) {
+    public Unit updateUnit(UnitRequestDto unitDto) {
         try{
+            Unit unit = new Unit();
+
+            unit.setId(unitDto.id());
+            unit.setName(unitDto.name());
+
+            Address addressUnit = addressRepository.findById(unitDto.addressId()).orElse(null);
+            if(addressUnit == null){
+                throw new Exception("Address not found");
+            }
+
+            if(unitRepository.findUnitByAddress(addressUnit) != null && unit.getId() != unitRepository.findUnitByAddress(addressUnit).getId()){
+                throw new Exception("Unit with this address already exists");
+            }
+
+            unit.setAddress(addressUnit);
+
             Unit oldUnit = unitRepository.findUnitById(unit.getId());
 
             // Verifica se a unidade já existe e se foi inalterada
@@ -46,6 +74,10 @@ public class UnitService {
             }
             if(oldUnit == unit){
                 throw new Exception("Cannot change the unit with the same fields");
+            }
+
+            if (unitRepository.findByName(unit.getName()).getId() != oldUnit.getId()) {
+                throw new Exception("The unit with the same name already exists");
             }
 
             return unitRepository.save(unit);
