@@ -41,6 +41,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/auth/refresh-token").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/password-reset").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/password-reset/validate-otp").permitAll()
+                        // prometheus
+                        .requestMatchers(HttpMethod.GET, "/actuator/prometheus").permitAll()
                         .requestMatchers(HttpMethod.GET, SWAGGER_WHITELIST).permitAll()
                         // AUTH
                         .anyRequest().authenticated()

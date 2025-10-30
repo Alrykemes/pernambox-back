@@ -39,8 +39,8 @@ services:
       - pernambox-net
     # Porta de acesso interna ("ports" em dev e "expose" em prod)
     ports:
-      - "9000"
-      - "9001"
+      - "9100:9000"
+      - "9101:9001"
     # Se quiser acesso web (opcional, para setup)
     # ports:
     #   - "9001:9001"
@@ -63,15 +63,16 @@ services:
   loki:
       image: grafana/loki:2.9.0
       container_name: loki
-      command: -config.file=/etc/loki/local-config.yaml
+      command: -config.file=/etc/loki/loki-config.yaml
+      user: "0"
       volumes:
-        - ./loki-config.yml:/etc/loki/config.yml
+        - ./observability/loki-config.yml:/etc/loki/loki-config.yaml
         - ./loki_data:/loki
       networks:
         - pernambox-net
       security_opt:
         - no-new-privileges:true
-      read_only: true
+      read_only: false
       restart: unless-stopped
       expose:
         - "3100"
@@ -92,6 +93,7 @@ services:
   grafana:
     image: grafana/grafana:10.0.0
     container_name: grafana
+    user: "0"
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASS}
@@ -123,8 +125,8 @@ services:
 volumes:
   pernambox_pgdata:
   pernambox_redis_data:
-  loki_data:
   grafana_data:
+  loki_data:
 networks:
   pernambox-net:
     driver: bridge
