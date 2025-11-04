@@ -18,13 +18,13 @@ public record UserUpdateDto(
         @Size(min = 11, max = 11, message = "cpf deve ter 11 caracteres!")
         String phone,
         Role role,
-        @NotBlank(message = "Password é necessário")
         @Pattern(
                 regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&._-])[A-Za-z\\d@$!%*`?&.#^'_-]{8,}$",
                 message = "A senha deve conter ao menos uma letra maiúscula, uma letra minúscula, um número e um caractere especial, com no mínimo 8 caracteres."
         )
         @Size(min = 8, max = 255, message = "A senha deve ter entre 8 e 255 caracteres")
         String password,
+        Boolean active,
         @Pattern(
                 regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&._-])[A-Za-z\\d@$!%*`?&.#^'_-]{8,}$",
                 message = "A senha deve conter ao menos uma letra maiúscula, uma letra minúscula, um número e um caractere especial, com no mínimo 8 caracteres."
