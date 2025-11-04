@@ -1,12 +1,17 @@
 package com.dev.pernambox.service;
 
 import com.dev.pernambox.domain.address.Address;
+import com.dev.pernambox.domain.address.dtos.AddressRequestDto;
 import com.dev.pernambox.domain.unit.Unit;
-import com.dev.pernambox.domain.unit.dtos.UnitRequestDto;
-import com.dev.pernambox.repositories.AddressRepository;
+import com.dev.pernambox.domain.unit.dtos.UnitCreateRequestDto;
+import com.dev.pernambox.domain.unit.dtos.UnitUpdateRequestDto;
+import com.dev.pernambox.domain.user.User;
+import com.dev.pernambox.exceptions.NotFoundException;
 import com.dev.pernambox.repositories.UnitRepository;
+import com.dev.pernambox.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,90 +20,71 @@ import java.util.UUID;
 @Service
 public class UnitService {
     private final UnitRepository unitRepository;
-    private final AddressRepository addressRepository;
+    private final UserRepository userRepository;
 
     public List<Unit> findAll() {
         return unitRepository.findAll();
     }
 
-    public Unit saveUnit(UnitRequestDto unitDto) {
-        try
-        {
-            Unit unit = new Unit();
-            unit.setName(unitDto.name());
+    @Transactional
+    public Unit saveUnit(UnitCreateRequestDto unitDto) {
+        AddressRequestDto newAddress = unitDto.address();
+        Address address = new Address(newAddress);
 
-            Address addressUnit = addressRepository.findById(unitDto.addressId()).orElse(null);
+        User responsible = userRepository.findById(unitDto.responsible_id())
+                .orElseThrow(() -> new NotFoundException("Usuário responsável não encontrado"));
 
-            if(addressUnit == null){
-                throw new Exception("Address not found");
-            }
-            if(unitRepository.findUnitByAddress(addressUnit) != null){
-                throw new Exception("Unit with this address already exists");
-            }
-            unit.setAddress(addressUnit);
+        Unit unit = new Unit();
 
-            // Verifica se já existe uma outra unidade com o mesmo nome
-            if (unitRepository.findByName(unit.getName()) != null) {
-                throw new Exception("There is already a unit with the same name");
-            }
-            return unitRepository.save(unit);
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        unit.setName(unitDto.name());
+        unit.setResponsible(responsible);
+        unit.setPhone(unitDto.phone());
+        unit.setEmail(unitDto.email());
+        unit.setAddress(address);
+
+        return unitRepository.save(unit);
     }
 
-    public Unit updateUnit(UnitRequestDto unitDto) {
-        try{
-            Unit unit = new Unit();
+    @Transactional
+    public Unit updateUnit(UUID id,  UnitUpdateRequestDto unitDto) {
+        Unit unit = unitRepository.findById(id).orElseThrow(() -> new NotFoundException("Unidade não encontrada"));
 
-            unit.setId(unitDto.id());
-            unit.setName(unitDto.name());
-
-            Address addressUnit = addressRepository.findById(unitDto.addressId()).orElse(null);
-            if(addressUnit == null){
-                throw new Exception("Address not found");
-            }
-
-            if(unitRepository.findUnitByAddress(addressUnit) != null && unit.getId() != unitRepository.findUnitByAddress(addressUnit).getId()){
-                throw new Exception("Unit with this address already exists");
-            }
-
-            unit.setAddress(addressUnit);
-
-            Unit oldUnit = unitRepository.findUnitById(unit.getId());
-
-            // Verifica se a unidade já existe e se foi inalterada
-            if (oldUnit == null) {
-                throw new Exception("The unit with the same id does not exist");
-            }
-            if(oldUnit == unit){
-                throw new Exception("Cannot change the unit with the same fields");
-            }
-
-            if (unitRepository.findByName(unit.getName()).getId() != oldUnit.getId()) {
-                throw new Exception("The unit with the same name already exists");
-            }
-
-            return unitRepository.save(unit);
+        if (unitDto.name() != null) unit.setName(unitDto.name());
+        if (unitDto.responsible_id() != null) {
+            User responsible = userRepository.findById(unitDto.responsible_id())
+                    .orElseThrow(() -> new NotFoundException("Usuário responsável não encontrado"));
+            unit.setResponsible(responsible);
         }
-        catch (Exception e) {
-            throw new RuntimeException(e);
+        if (unitDto.phone() != null) unit.setPhone(unitDto.phone());
+        if (unitDto.email() != null) unit.setEmail(unitDto.email());
+
+        if (unitDto.address() != null) {
+            AddressRequestDto a = unitDto.address();
+            Address address = unit.getAddress();
+
+            address.setNumber(a.number());
+            address.setStreet(a.street());
+            address.setDistrict(a.district());
+            address.setCity(a.city());
+            address.setState(a.state());
+            address.setZipCode(a.zipCode());
+            address.setComplement(a.complement());
+
         }
+        return unitRepository.save(unit);
     }
 
+    @Transactional
     public void deleteUnit(UUID idUnit) {
-        try{
+        try {
             Unit oldUnit = unitRepository.findUnitById(idUnit);
 
             if (oldUnit == null) {
                 throw new Exception("The unit with the same id does not exist");
-            }
-            else {
+            } else {
                 unitRepository.delete(oldUnit);
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

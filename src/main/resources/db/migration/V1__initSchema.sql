@@ -1,26 +1,6 @@
 -- Extensão para gerar UUIDs automaticamente
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE address_unit
-(
-    id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    number     VARCHAR(255) NOT NULL,
-    street     VARCHAR(255) NOT NULL,
-    district   VARCHAR(255) NOT NULL,
-    city       VARCHAR(255) NOT NULL,
-    state      VARCHAR(255) NOT NULL,
-    zip_code   CHAR(8)      NOT NULL,
-    complement VARCHAR(255)
-);
-
-CREATE TABLE unit
-(
-    id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name       VARCHAR(150) NOT NULL,
-    address_id UUID         NOT NULL,
-    CONSTRAINT fk_unit_address_id FOREIGN KEY (address_id)
-        REFERENCES address_unit (id) ON DELETE CASCADE
-);
 
 CREATE TYPE role_type AS ENUM ('MASTER_ADM','UNIT_ADM','USER');
 
@@ -33,6 +13,34 @@ CREATE TABLE users
     phone    VARCHAR(14) UNIQUE,
     password VARCHAR(255) NOT NULL,
     role     role_type    NOT NULL DEFAULT 'USER'
+);
+
+CREATE TABLE address_unit
+(
+    id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    number     VARCHAR(255) NOT NULL,
+    street     VARCHAR(255) NOT NULL,
+    district   VARCHAR(255) NOT NULL,
+    city       VARCHAR(255) NOT NULL,
+    state      VARCHAR(255) NOT NULL,
+    zip_code   CHAR(8)      NOT NULL,
+    complement VARCHAR(255),
+    CONSTRAINT unique_address UNIQUE (street, number, zip_code)
+);
+
+CREATE TABLE unit
+(
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name            VARCHAR(150) NOT NULL,
+    phone           VARCHAR(11)  NOT NULL,
+    email           VARCHAR(255) NOT NULL,
+    responsible_id  UUID         NOT NULL,
+    address_id      UUID         NOT NULL UNIQUE,
+    CONSTRAINT fk_unit_responsible FOREIGN KEY (responsible_id)
+        REFERENCES users (id) ON DELETE RESTRICT,
+    CONSTRAINT fk_unit_address_id FOREIGN KEY (address_id)
+        REFERENCES address_unit (id) ON DELETE CASCADE,
+    CONSTRAINT unique_unit_email UNIQUE (email)
 );
 
 CREATE TYPE status_type AS ENUM ('STABLE','UNSTABLE','CRITICAL');

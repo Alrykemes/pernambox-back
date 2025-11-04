@@ -1,7 +1,8 @@
 package com.dev.pernambox.controller;
 
 import com.dev.pernambox.domain.unit.Unit;
-import com.dev.pernambox.domain.unit.dtos.UnitRequestDto;
+import com.dev.pernambox.domain.unit.dtos.UnitCreateRequestDto;
+import com.dev.pernambox.domain.unit.dtos.UnitUpdateRequestDto;
 import com.dev.pernambox.service.UnitService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,15 +30,22 @@ public class UnitController {
 
     @PostMapping()
     @Operation(summary = "Adiciona unidade", description = "Faz a inserção de uma unidade")
-    public Unit saveUnit(@Valid @RequestBody UnitRequestDto unitDto){
+    public Unit saveUnit(@Valid @RequestBody UnitCreateRequestDto unitDto){
         return unitService.saveUnit(unitDto);
     }
 
-    @PutMapping()
+    @PatchMapping("/{unitId}")
     @Operation(summary = "Atualiza unidade", description = "Faz a alteração da unidade desejada")
-    public Unit updateUnit(@Valid @RequestBody UnitRequestDto unitDto){ return unitService.updateUnit(unitDto); }
+    public Unit updateUnit(
+            @PathVariable UUID unitId,
+            @Valid @RequestBody UnitUpdateRequestDto unitDto
+    ) {
+        return unitService.updateUnit(unitId, unitDto);
+    }
 
-    @DeleteMapping()
+    @DeleteMapping("/{unitId}")
     @Operation(summary = "Deleta uma unidade", description = "Faz a deleção de uma unidade")
-    public void deleteUnit(@Valid @RequestBody UUID unitId){ unitService.deleteUnit(unitId); }
+    public void deleteUnit(@PathVariable UUID unitId) {
+        unitService.deleteUnit(unitId);
+    }
 }
