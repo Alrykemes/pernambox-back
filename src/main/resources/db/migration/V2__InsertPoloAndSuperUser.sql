@@ -1,12 +1,13 @@
 -- 1) Criar o usuário principal
-INSERT INTO users (name, cpf, email, phone, password, role)
+INSERT INTO users (name, cpf, email, phone, password, active, role)
 VALUES (
     'João da Silva',
     '12345678901',
     'teste@example.com',
     '(11)99999-9999',
     '$2a$12$BEubfFRRsx7mu7w.fdxArO2aqHB78XmAG9sLdpZr0FjwaRBdt1B/W',
-    'MASTER_ADM'
+    true,
+    'ADMIN'
 )
 ON CONFLICT (email) DO NOTHING;
 
