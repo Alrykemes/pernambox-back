@@ -93,6 +93,17 @@ public class AuthController {
             "do cookie http-only se o RefreshToken estiver espirado retorna erro")
     public ResponseEntity<LoginResponseDto> refreshToken(HttpServletRequest request, HttpServletResponse response) {
 
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie c : cookies) {
+                if ("refreshToken".equals(c.getName())) {
+                    System.out.println("Received refreshToken cookie: " + c.getValue());
+                }
+            }
+        } else {
+            System.out.println("No cookies in request");
+        }
+
         RefreshToken refreshTokenFromCookie = refreshTokenService.getRefreshTokenByCookies(request);
 
         RefreshToken refreshTokenFromDb = refreshTokenService.findByUserId(refreshTokenFromCookie.getUser().getId());
@@ -131,12 +142,34 @@ public class AuthController {
         );
     }
 
+    @PostMapping("/logout")
+    @Operation(summary = "Realiza logout do usuário", description = "Remove o refresh token do banco e limpa o cookie")
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+
+        RefreshToken refreshToken = refreshTokenService.getRefreshTokenByCookies(request);
+
+        System.out.println("teste 1: " + refreshToken);
+        System.out.println("teste 2: " + refreshToken.getToken());
+
+        refreshTokenService.deleteByToken(refreshToken.getToken());
+
+        Cookie cookie = new Cookie("refreshToken", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setPath("/auth");
+        cookie.setMaxAge(0);
+        cookie.setAttribute("SameSite", "Strict");
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok().build();
+    }
+
     private void setRefreshTokenCookies(HttpServletResponse response, UUID token) {
         Cookie cookie = new Cookie("refreshToken", token.toString());
         cookie.setHttpOnly(true);
         cookie.setSecure(false);
-        cookie.setPath("/auth/refresh-token");
-        cookie.setMaxAge(15 * 24 * 60 * 6);
+        cookie.setPath("/auth");
+        cookie.setMaxAge(15 * 24 * 60 * 60);
         cookie.setAttribute("SameSite", "Strict");
         response.addCookie(cookie);
     }

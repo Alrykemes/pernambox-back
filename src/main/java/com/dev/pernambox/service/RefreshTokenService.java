@@ -53,4 +53,11 @@ public class RefreshTokenService {
                 })
                 .orElseThrow(() -> new NotFoundException("Refresh Token Not Found in Cookies"));
     }
+
+    public void deleteByToken(UUID token) {
+        RefreshToken existing = refreshTokenRepository.findByToken(token)
+                .orElseThrow(() -> new NotFoundException("Token não encontrado"));
+        refreshTokenRepository.delete(existing);
+    }
+
 }
