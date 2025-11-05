@@ -1,6 +1,5 @@
 package com.dev.pernambox.domain.user.dtos;
 
-import com.dev.pernambox.domain.unit.Unit;
 import com.dev.pernambox.domain.user.enums.Role;
 import com.dev.pernambox.domain.user.User;
 
@@ -12,9 +11,10 @@ public record UserResponseDto(
         String cpf,
         String email,
         String phone,
+        boolean active,
         Role role
 ) {
     public UserResponseDto(User user) {
-        this(user.getId(), user.getName(), user.getCpf(), user.getEmail(), user.getPhone(), user.getRole());
+        this(user.getId(), user.getName(), user.getCpf(), user.getEmail(), user.getPhone(), user.getActive(), user.getRole());
     }
 }

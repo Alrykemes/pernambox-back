@@ -1,9 +1,7 @@
 package com.dev.pernambox.controller;
 
 import com.dev.pernambox.domain.user.User;
-import com.dev.pernambox.domain.user.dtos.UserRequestDto;
-import com.dev.pernambox.domain.user.dtos.UserResponseDto;
-import com.dev.pernambox.domain.user.dtos.UserUpdateDto;
+import com.dev.pernambox.domain.user.dtos.*;
 import com.dev.pernambox.domain.user.enums.Role;
 import com.dev.pernambox.exceptions.AuthorizationException;
 import com.dev.pernambox.service.EmailService;
@@ -19,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -41,7 +38,7 @@ public class UserController {
             throw new AuthorizationException("Você não tem Autorização para criar usuários!");
         }
 
-        if((body.role().equals(Role.MASTER_ADM) || (body.role().equals(Role.UNIT_ADM))) && !user.getRole().equals(Role.MASTER_ADM)) {
+        if (body.role().equals(Role.ADMIN) && !user.getRole().equals(Role.ADMIN)) {
             throw new AuthorizationException("Apenas Master Admins podem criar outros Admins!");
         }
 
@@ -59,22 +56,49 @@ public class UserController {
         return ResponseEntity.created(uri).body(new UserResponseDto(newUser));
     }
 
-    @GetMapping("info/{userId}")
+    @GetMapping("/info/{userId}")
     @Operation(summary = "Retorna usuário pelo id")
     public ResponseEntity<UserResponseDto> getUserById(@PathVariable UUID userId) {
         return ResponseEntity.ok(new UserResponseDto(userService.getUserById(userId)));
     }
 
+    @GetMapping("/stats")
+    @Operation(summary = "Status de todos usuários")
+    public ResponseEntity<StatsUsersResponseDto> getStatsUsers() {
+        return ResponseEntity.ok(this.userService.getUsersStats());
+    }
+
     @GetMapping()
-    @Operation(summary = "Retorna usuário pelo nome")
-    public ResponseEntity<List<UserResponseDto>> getUserByName(@RequestParam String name) {
-        return ResponseEntity.ok(userService.getUserByName(name).stream().map(UserResponseDto::new).toList());
+    @Operation(summary = "Retorna usuário pelo nome, com possibilidade de inserir filtros")
+    public ResponseEntity<PageUserResponseDto> getUserByName(
+            @RequestParam() String name,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "false") boolean active,
+            @RequestParam(required = false, defaultValue = "false") boolean noActive,
+            @RequestParam(required = false, defaultValue = "false") boolean onlyAdmin,
+            @RequestParam(required = false, defaultValue = "false") boolean onlyUser) {
+        return ResponseEntity.ok(
+                new PageUserResponseDto(
+                        userService.getUserByName(
+                                name,
+                                page - 1,
+                                size,
+                                active,
+                                noActive,
+                                onlyAdmin,
+                                onlyUser
+                        )
+                )
+        );
     }
 
     @GetMapping("/all")
-    @Operation(summary = "Retorna todos usuários")
-    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers().stream().map(UserResponseDto::new).toList());
+    @Operation(summary = "Retorna todos usuários de forma paginada, com possibilidade de inserir filtros")
+    public ResponseEntity<PageUserResponseDto> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(new PageUserResponseDto(userService.getAllUsers(page - 1, size)));
     }
 
     @PutMapping("/update/me")
@@ -86,7 +110,7 @@ public class UserController {
             throw new AuthorizationException("Não é possível alterar outro usuário por esta rota!");
         }
 
-        return ResponseEntity.ok(new UserResponseDto(userService.update(body)));
+        return ResponseEntity.ok(new UserResponseDto(userService.update(body, user)));
     }
 
     @PutMapping("/admin/update")
@@ -100,6 +124,6 @@ public class UserController {
             }
         }
 
-        return ResponseEntity.ok(new UserResponseDto(userService.update(body)));
+        return ResponseEntity.ok(new UserResponseDto(userService.update(body, user)));
     }
 }

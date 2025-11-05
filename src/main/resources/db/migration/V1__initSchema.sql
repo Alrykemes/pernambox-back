@@ -2,7 +2,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 
-CREATE TYPE role_type AS ENUM ('MASTER_ADM','UNIT_ADM','USER');
+CREATE TYPE role_type AS ENUM ('ADMIN','USER');
 
 CREATE TABLE users
 (
@@ -10,8 +10,9 @@ CREATE TABLE users
     name     VARCHAR(255) NOT NULL,
     cpf      CHAR(11)     NOT NULL UNIQUE,
     email    VARCHAR(255) NOT NULL UNIQUE,
-    phone    VARCHAR(14) UNIQUE,
+    phone    VARCHAR(14)  UNIQUE,
     password VARCHAR(255) NOT NULL,
+    active   BOOLEAN      NOT NULL,
     role     role_type    NOT NULL DEFAULT 'USER'
 );
 

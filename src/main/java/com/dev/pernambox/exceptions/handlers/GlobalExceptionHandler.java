@@ -5,6 +5,7 @@ import com.dev.pernambox.exceptions.dtos.ErrorResponseDto;
 import io.minio.errors.MinioException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -22,8 +23,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleGeneralException(Exception ex, HttpServletRequest request) {
         StackTraceElement origin = ex.getStackTrace()[0];
-        log.error("Exception Não Tratada: {} \n Classe: {} \n Método: {} \n Linha: {}",
-                ex.getMessage(), origin.getClass(), origin.getMethodName(), origin.getLineNumber());
+        log.error("Exception Não Tratada: {}, \n messagem: {} \n Classe: {} \n Método: {} \n Linha: {}",
+                ex.getClass(), ex.getMessage(), origin.getClass(), origin.getMethodName(), origin.getLineNumber());
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", ex.getMessage(), request);
     }
 
@@ -86,6 +87,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDto> handleUploadFilesException(UploadFilesException ex, HttpServletRequest request) {
         log.error("Upload Files Error: {}", ex.getMessage());
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Error to upload Files", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponseDto> handleDataIntegrityViolationException(DataIntegrityViolationException ex, HttpServletRequest request) {
+        log.error("Violação de integridade de dados: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Erro ao criar/atualizar dados", ex.getMessage(), request);
     }
 
     private ResponseEntity<ErrorResponseDto> buildErrorResponse(HttpStatus status, String title, String message, HttpServletRequest request) {
