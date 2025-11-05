@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -64,6 +63,7 @@ public class UserController {
     }
 
     @GetMapping("/stats")
+    @Operation(summary = "Status de todos usuários")
     public ResponseEntity<StatsUsersResponseDto> getStatsUsers() {
         return ResponseEntity.ok(this.userService.getUsersStats());
     }

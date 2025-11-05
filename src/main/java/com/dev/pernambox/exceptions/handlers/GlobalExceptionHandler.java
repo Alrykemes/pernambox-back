@@ -4,7 +4,6 @@ import com.dev.pernambox.exceptions.*;
 import com.dev.pernambox.exceptions.dtos.ErrorResponseDto;
 import io.minio.errors.MinioException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;

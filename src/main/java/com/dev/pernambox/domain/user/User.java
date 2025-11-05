@@ -4,7 +4,6 @@ import com.dev.pernambox.domain.user.converters.RoleConverter;
 import com.dev.pernambox.domain.user.dtos.UserRequestDto;
 import com.dev.pernambox.domain.user.enums.PostgreRoleEnum;
 import com.dev.pernambox.domain.user.enums.Role;
-import com.dev.pernambox.domain.unit.Unit;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

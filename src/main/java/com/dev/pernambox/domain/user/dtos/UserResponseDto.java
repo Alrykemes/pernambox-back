@@ -1,6 +1,5 @@
 package com.dev.pernambox.domain.user.dtos;
 
-import com.dev.pernambox.domain.unit.Unit;
 import com.dev.pernambox.domain.user.enums.Role;
 import com.dev.pernambox.domain.user.User;
 

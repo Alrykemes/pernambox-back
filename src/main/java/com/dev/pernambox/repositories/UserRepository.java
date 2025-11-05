@@ -2,8 +2,6 @@ package com.dev.pernambox.repositories;
 
 import com.dev.pernambox.domain.user.User;
 import com.dev.pernambox.domain.user.dtos.StatsUsersResponseDto;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -50,14 +48,14 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             Pageable pageable);
 
     @Query("""
-    SELECT new com.dev.pernambox.domain.user.dtos.StatsUsersResponseDto(
-        COUNT(u),
-        SUM(CASE WHEN u.active = true THEN 1 ELSE 0 END),
-        SUM(CASE WHEN u.active = false THEN 1 ELSE 0 END),
-        SUM(CASE WHEN u.role = com.dev.pernambox.domain.user.enums.Role.ADMIN THEN 1 ELSE 0 END)
-    )
-    FROM User u
-""")
+            SELECT new com.dev.pernambox.domain.user.dtos.StatsUsersResponseDto(
+                            COUNT(u),
+                            SUM(CASE WHEN u.active = true THEN 1 ELSE 0 END),
+                            SUM(CASE WHEN u.active = false THEN 1 ELSE 0 END),
+                            SUM(CASE WHEN u.role = com.dev.pernambox.domain.user.enums.Role.ADMIN THEN 1 ELSE 0 END)
+                        )
+                        FROM User u
+            """)
     StatsUsersResponseDto getUsersStats();
 
     boolean existsByCpfEquals(String cpf);
