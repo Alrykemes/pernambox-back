@@ -74,7 +74,7 @@ CREATE TABLE resource_product
 );
 
 CREATE TYPE operation_type AS ENUM ('CREATE','UPDATE','DELETE');
-CREATE TYPE operation_target AS ENUM ('ADDRESS','UNIT','USER','PRODUCT','RESOURCE','TOOLS','RESOURCE_PRODUCT','ORIGIN');
+CREATE TYPE operation_target AS ENUM ('UNIT','USER','PRODUCT','RESOURCE','RESOURCE_PRODUCT','ORIGIN', 'DESTINATION');
 
 CREATE TABLE operation
 (
@@ -130,7 +130,7 @@ CREATE TABLE address_destination
     complement VARCHAR(255)
 );
 
-CREATE TABLE final_destination
+CREATE TABLE destination
 (
     id          SERIAL PRIMARY KEY,
     description VARCHAR(255) NOT NULL,
