@@ -21,12 +21,13 @@ VALUES (uuid_generate_v4(),
 ON CONFLICT DO NOTHING;
 
 -- 3) Usuário (vinculado à unidade criada)
-INSERT INTO users (id, name, cpf, email, phone, password, role)
+INSERT INTO users (id, name, cpf, email, phone, password, active, role)
 VALUES (uuid_generate_v4(),
         'João da Silva',
         '12345678901',
         'teste@example.com',
         '(11)99999-9999',
         '$2a$12$BEubfFRRsx7mu7w.fdxArO2aqHB78XmAG9sLdpZr0FjwaRBdt1B/W',
-        'MASTER_ADM')
+        true,
+        'ADMIN')
 ON CONFLICT DO NOTHING;
