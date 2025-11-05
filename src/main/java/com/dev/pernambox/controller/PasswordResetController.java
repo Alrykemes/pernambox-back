@@ -13,12 +13,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalTime;
 
+@Slf4j
 @RestController
 @RequestMapping("/auth/password-reset")
 @RequiredArgsConstructor
@@ -50,7 +52,7 @@ public class PasswordResetController {
     public ResponseEntity<VerifyOTPResponseDto> validateOTP(@Valid @RequestBody VerifyOTPRequestDto body, HttpServletRequest request) {
         redisService.validateOtp(body.userId(), body.otpCode());
 
-        User user = userService.getUserById(body.userId().toString());
+        User user = userService.getUserById(body.userId());
 
         String token = jwtTokenService.generatePasswordResetToken(
                 body.userId(),
@@ -79,7 +81,8 @@ public class PasswordResetController {
         if (userService.changeUserPassword(user.getId(), body.password())) {
             return ResponseEntity.ok().build();
         } else {
-            throw new PasswordResetException("Failed to reset password in DB");
+            log.error("Falha ao Resetar a senha no Banco de dados. \n User: {} \n Token: {}", user.getId(), token);
+            throw new PasswordResetException("Falha ao resetar a senha!");
         }
     }
 

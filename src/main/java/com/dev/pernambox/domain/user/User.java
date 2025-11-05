@@ -1,12 +1,15 @@
 package com.dev.pernambox.domain.user;
 
+import com.dev.pernambox.domain.user.converters.RoleConverter;
+import com.dev.pernambox.domain.user.dtos.UserRequestDto;
+import com.dev.pernambox.domain.user.enums.PostgreRoleEnum;
 import com.dev.pernambox.domain.user.enums.Role;
-import com.dev.pernambox.domain.unit.Unit;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -43,20 +46,18 @@ public class User implements UserDetails {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", columnDefinition = "role", nullable = false)
-    private Role role;
+    @Column(name = "active", nullable = false)
+    private Boolean active;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "unit_id", nullable = false)
-    private Unit unit;
+    @Convert(converter = RoleConverter.class)
+    @Type(PostgreRoleEnum.class)
+    @Column(name = "role", columnDefinition = "role_type", nullable = false)
+    private Role role;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (this.role == Role.MASTER_ADM) {
-            return List.of(new SimpleGrantedAuthority("MASTER_ADM"), new SimpleGrantedAuthority("UNIT_ADM"), new SimpleGrantedAuthority("USER"));
-        } else if(this.role == Role.UNIT_ADM) {
-            return List.of(new SimpleGrantedAuthority("UNIT_ADM"), new SimpleGrantedAuthority("USER"));
+        if (this.role == Role.ADMIN) {
+            return List.of(new SimpleGrantedAuthority("ADMIN"), new SimpleGrantedAuthority("USER"));
         } else {
             return List.of(new SimpleGrantedAuthority("USER"));
         }
@@ -70,5 +71,14 @@ public class User implements UserDetails {
     @Override
     public String getUsername() {
         return this.email;
+    }
+
+    public User(UserRequestDto requestDto) {
+        this.name = requestDto.name();
+        this.email = requestDto.email();
+        this.cpf = requestDto.cpf();
+        this.phone = requestDto.phone();
+        this.role = requestDto.role();
+        this.active = true;
     }
 }
