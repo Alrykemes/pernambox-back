@@ -26,12 +26,13 @@ ON CONFLICT (street, number, zip_code) DO NOTHING;
 
 
 -- 3) Criar a unidade usando o user e o address criados
-INSERT INTO unit (name, phone, email, responsible_id, address_id)
+INSERT INTO unit (name, phone, email, responsible_id, address_id, created_at)
 VALUES (
     'Unidade Central',
     '36796543',
     'unidadecentral@defesacivil.gov.br',
     (SELECT id FROM users WHERE email = 'teste@example.com'),
-    (SELECT id FROM address_unit WHERE street = 'Av. Paulista')
+    (SELECT id FROM address_unit WHERE street = 'Av. Paulista'),
+    NOW()
 )
 ON CONFLICT (email) DO NOTHING;

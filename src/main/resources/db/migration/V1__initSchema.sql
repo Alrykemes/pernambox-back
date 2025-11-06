@@ -36,6 +36,9 @@ CREATE TABLE unit
     phone           VARCHAR(11)  NOT NULL,
     email           VARCHAR(255) NOT NULL,
     responsible_id  UUID         NOT NULL,
+--     active BOOLEAN NOT NULL,
+    created_at      TIMESTAMP    NOT NULL,
+    description     VARCHAR(255),
     address_id      UUID         NOT NULL UNIQUE,
     CONSTRAINT fk_unit_responsible FOREIGN KEY (responsible_id)
         REFERENCES users (id) ON DELETE RESTRICT,
@@ -82,12 +85,12 @@ CREATE TABLE resource_product
 );
 
 CREATE TYPE operation_type AS ENUM ('CREATE','UPDATE','DELETE');
-CREATE TYPE operation_target AS ENUM ('ADDRESS','UNIT','USER','PRODUCT','RESOURCE','TOOLS','RESOURCE_PRODUCT','ORIGIN');
+CREATE TYPE operation_target AS ENUM ('UNIT','USER','PRODUCT','RESOURCE','RESOURCE_PRODUCT','ORIGIN', 'DESTINATION');
 
 CREATE TABLE operation
 (
     id               SERIAL PRIMARY KEY,
-    operation        operation_type   NOT NULL,
+    operation_type   operation_type   NOT NULL,
     operation_date   TIMESTAMP        NOT NULL,
     operation_target operation_target NOT NULL,
     description      VARCHAR(255)     NOT NULL,
@@ -138,7 +141,7 @@ CREATE TABLE address_destination
     complement VARCHAR(255)
 );
 
-CREATE TABLE final_destination
+CREATE TABLE destination
 (
     id          SERIAL PRIMARY KEY,
     description VARCHAR(255) NOT NULL,
