@@ -44,6 +44,11 @@ public class UserService {
         return this.userRepository.save(newUser);
     }
 
+    public void deleteUser(UUID userId) {
+        this.userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        this.userRepository.deleteById(userId);
+    }
+
     public User getUserByEmail(String email) {
         return this.userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found"));
     }

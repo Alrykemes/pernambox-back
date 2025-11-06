@@ -56,6 +56,12 @@ public class UserController {
         return ResponseEntity.created(uri).body(new UserResponseDto(newUser));
     }
 
+    @DeleteMapping("/{userId}")
+    @Operation(summary = "Deleta um usuário", description = "Deleta o usuário")
+    public void deleteUser(@PathVariable UUID userId) {
+        userService.deleteUser(userId);
+    }
+
     @GetMapping("/info/{userId}")
     @Operation(summary = "Retorna usuário pelo id")
     public ResponseEntity<UserResponseDto> getUserById(@PathVariable UUID userId) {
@@ -98,8 +104,9 @@ public class UserController {
     public ResponseEntity<PageUserResponseDto> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(new PageUserResponseDto(userService.getAllUsers(page - 1, size)));
+        return ResponseEntity.ok(new PageUserResponseDto(userService.getAllUsers(page, size)));
     }
+
 
     @PutMapping("/update/me")
     @Operation(summary = "Atualiza usuário", description = "Rota utilizada pelo usuário para alterar suas próprias informações.")

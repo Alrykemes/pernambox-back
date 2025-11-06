@@ -26,7 +26,6 @@ public class UnitService {
         return unitRepository.findAll();
     }
 
-    @Transactional
     public Unit saveUnit(UnitCreateRequestDto unitDto) {
         AddressRequestDto newAddress = unitDto.address();
         Address address = new Address(newAddress);
@@ -45,7 +44,6 @@ public class UnitService {
         return unitRepository.save(unit);
     }
 
-    @Transactional
     public Unit updateUnit(UUID id,  UnitUpdateRequestDto unitDto) {
         Unit unit = unitRepository.findById(id).orElseThrow(() -> new NotFoundException("Unidade não encontrada"));
 
@@ -74,7 +72,6 @@ public class UnitService {
         return unitRepository.save(unit);
     }
 
-    @Transactional
     public void deleteUnit(UUID idUnit) {
         try {
             Unit oldUnit = unitRepository.findUnitById(idUnit);
