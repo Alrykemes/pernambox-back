@@ -34,9 +34,9 @@ public class UserService {
         if(this.userRepository.existsByEmailEquals(userRequestDto.email())) {
             throw new CreateEntityException("Já existe um cadastro com este Email!");
         }
-        if(CpfUtils.isValidCPF(userRequestDto.cpf())) {
-            throw new CreateEntityException("Número de CPF inválido!");
-        }
+//        if(CpfUtils.isValidCPF(userRequestDto.cpf())) {
+//            throw new CreateEntityException("Número de CPF inválido!");
+//        }
 
         User newUser = new User(userRequestDto);
         newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
@@ -81,13 +81,12 @@ public class UserService {
             if (!passwordEncoder.matches(updateDto.password(), user.getPassword())) {
                 throw new AuthorizationException("Senha Incorreta!");
             }
+            if (updateDto.newPassword().equals(updateDto.password())) {
+                throw new UpdateEntityException("A nova senha não pode ser ingual a antiga!");
+            }
         }
 
         setUpdateValues(updateDto, user);
-
-        if (updateDto.newPassword().equals(updateDto.password())) {
-            throw new UpdateEntityException("A nova senha não pode ser ingual a antiga!");
-        }
 
         return this.userRepository.save(user);
     }
@@ -102,17 +101,18 @@ public class UserService {
     }
 
     private void setUpdateValues(UserUpdateDto updateDto, User user) {
-        if(updateDto.email() != null && this.userRepository.existsByEmailEquals(updateDto.email())) {
+        if(updateDto.email() != null && this.userRepository.existsByEmailAndIdNot(updateDto.email(), updateDto.userId())) {
             throw new UpdateEntityException("Já existe um cadastro com este Email!");
         }
-        if(updateDto.phone() != null && this.userRepository.existsByPhoneEquals(updateDto.phone())) {
+        if(updateDto.phone() != null && this.userRepository.existsByPhoneAndIdNot(updateDto.phone(), updateDto.userId())) {
             throw new UpdateEntityException("Já existe um cadastro com este Telefone!");
         }
-        if(updateDto.cpf() != null && this.userRepository.existsByCpfEquals(updateDto.cpf())) {
+        if(updateDto.cpf() != null && this.userRepository.existsByCpfAndIdNot(updateDto.cpf(), updateDto.userId())) {
             throw new UpdateEntityException("Já existe um cadastro com este CPF!");
-        } else if(CpfUtils.isValidCPF(updateDto.cpf())) {
-            throw new UpdateEntityException("Número de CPF inválido!");
         }
+//        else if(CpfUtils.isValidCPF(updateDto.cpf())) {
+//            throw new UpdateEntityException("Número de CPF inválido!");
+//        }
 
         user.setName(updateDto.name() == null ? user.getName() : updateDto.name());
         user.setEmail(updateDto.email() == null ? user.getEmail() : updateDto.email());

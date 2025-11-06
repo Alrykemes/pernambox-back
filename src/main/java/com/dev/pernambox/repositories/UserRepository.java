@@ -63,4 +63,10 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByPhoneEquals(String phone);
 
     boolean existsByEmailEquals(String email);
+
+    boolean existsByCpfAndIdNot(String cpf, UUID id);
+
+    boolean existsByPhoneAndIdNot(String phone, UUID id);
+
+    boolean existsByEmailAndIdNot(String email, UUID id);
 }

@@ -71,6 +71,18 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.NOT_FOUND, "Not Found Error", ex.getMessage(), request);
     }
 
+    @ExceptionHandler(CreateEntityException.class)
+    public ResponseEntity<ErrorResponseDto> handleCreateEntityException(NotFoundException ex, HttpServletRequest request) {
+        log.error("Error to create in DB: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.NOT_FOUND, "Create Entity error", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(UpdateEntityException.class)
+    public ResponseEntity<ErrorResponseDto> handleUpdateEntityException(NotFoundException ex, HttpServletRequest request) {
+        log.error("Error to update in DB: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.NOT_FOUND, "Update Entity Error", ex.getMessage(), request);
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponseDto> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, HttpServletRequest request) {
         log.error("Body error: {}", ex.getMessage());

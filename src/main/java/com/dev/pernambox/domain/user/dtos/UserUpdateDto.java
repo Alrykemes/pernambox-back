@@ -15,7 +15,7 @@ public record UserUpdateDto(
         String cpf,
         @Email(message = "email precisa ser um email válido")
         String email,
-        @Size(min = 11, max = 11, message = "cpf deve ter 11 caracteres!")
+        @Size(min = 11, max = 11, message = "phone deve ter 11 caracteres!")
         String phone,
         Role role,
         @Pattern(

@@ -5,13 +5,10 @@ public class CpfUtils {
     public static boolean isValidCPF(String cpf) {
         if (cpf == null) return false;
 
-        // Remove pontos e traços
         cpf = cpf.replaceAll("[^\\d]", "");
 
-        // Deve ter 11 dígitos
         if (cpf.length() != 11) return false;
 
-        // Elimina CPFs com todos os dígitos iguais
         if (cpf.matches("(\\d)\\1{10}")) return false;
 
         try {
