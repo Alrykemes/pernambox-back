@@ -6,13 +6,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
@@ -25,8 +26,8 @@ public class OperationController {
 
     @GetMapping("")
     @Operation(summary = "Lista operações", description = "Faz a listagem de todas as operações realizadas")
-    public ResponseEntity<List<com.dev.pernambox.domain.operation.Operation>> getAllOperations() {
-        return ResponseEntity.ok(operationService.getAllOperations());
+    public ResponseEntity<Page<com.dev.pernambox.domain.operation.Operation>> getAllOperations(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(operationService.getAllOperations(page, size));
     }
 
     @PostMapping("")
@@ -36,9 +37,8 @@ public class OperationController {
         return ResponseEntity.created(uri).body(newOperation);
     }
 
-//    se for mudar a forma do get muda no create tbm a URI
-//    @GetMapping("/info/{id}")
-//    public ResponseEntity<com.dev.pernambox.domain.operation.Operation> getOperationById(@PathVariable Integer id) {
-//
-//    }
+    @GetMapping("/info/{id}")
+    public ResponseEntity<com.dev.pernambox.domain.operation.Operation> getOperationById(@PathVariable UUID id) {
+        return ResponseEntity.ok(operationService.getOperationById(id));
+    }
 }

@@ -7,33 +7,40 @@ import com.dev.pernambox.exceptions.CreateEntityException;
 import com.dev.pernambox.exceptions.NotFoundException;
 import com.dev.pernambox.repositories.OperationRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @AllArgsConstructor
 @Service
 public class OperationService {
     private final OperationRepository operationRepository;
     private final UserService userService;
-//    private final UnitService unitService;
+    private final UnitService unitService;
 
-    public List<Operation> getAllOperations() {
-        return this.operationRepository.findAll();
+    public Page<Operation> getAllOperations(int page, int size) {
+        Pageable pageable = Pageable.ofSize(size).withPage(page);
+        return this.operationRepository.findAll(pageable);
     }
 
     public Operation createOperation(OperationRequestDto operationDto) {
         Operation newOperation = new Operation(operationDto);
 
         newOperation.setUser(userService.getUserById(operationDto.userId()));
-//        newOperation.setUser(unitService.getUnitById(operationDto.unitId()));
+        newOperation.setUnit(unitService.findUnitById(operationDto.unitId()));
         this.verifyTarget(operationDto);
         newOperation.setOperationDate(new Date());
 
         return this.operationRepository.save(newOperation);
     }
 
+    public Operation getOperationById(UUID id) {
+        return this.operationRepository.findById(id).orElseThrow(() -> new NotFoundException("Operation Não encontrada!"));
+    }
 
     private void verifyTarget(OperationRequestDto operationDto) {
         if(operationDto.operationTarget().equals(OperationTarget.USER)) {

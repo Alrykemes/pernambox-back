@@ -36,6 +36,9 @@ CREATE TABLE unit
     phone           VARCHAR(11)  NOT NULL,
     email           VARCHAR(255) NOT NULL,
     responsible_id  UUID         NOT NULL,
+--     active BOOLEAN NOT NULL,
+    created_at      TIMESTAMP    NOT NULL,
+    description     VARCHAR(255),
     address_id      UUID         NOT NULL UNIQUE,
     CONSTRAINT fk_unit_responsible FOREIGN KEY (responsible_id)
         REFERENCES users (id) ON DELETE RESTRICT,

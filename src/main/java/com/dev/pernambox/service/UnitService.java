@@ -4,12 +4,15 @@ import com.dev.pernambox.domain.address.Address;
 import com.dev.pernambox.domain.address.dtos.AddressRequestDto;
 import com.dev.pernambox.domain.unit.Unit;
 import com.dev.pernambox.domain.unit.dtos.UnitCreateRequestDto;
+import com.dev.pernambox.domain.unit.dtos.UnitResponseDto;
+import com.dev.pernambox.domain.unit.dtos.UnitStatsResponseDto;
 import com.dev.pernambox.domain.unit.dtos.UnitUpdateRequestDto;
 import com.dev.pernambox.domain.user.User;
 import com.dev.pernambox.exceptions.NotFoundException;
 import com.dev.pernambox.repositories.UnitRepository;
 import com.dev.pernambox.repositories.UserRepository;
 import lombok.AllArgsConstructor;
+import org.checkerframework.checker.units.qual.N;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +48,10 @@ public class UnitService {
         return unitRepository.save(unit);
     }
 
+    public Unit findUnitById(UUID id) {
+        return unitRepository.findById(id).orElseThrow(() -> new NotFoundException("Unidade não encontrada"));
+    }
+
     @Transactional
     public Unit updateUnit(UUID id,  UnitUpdateRequestDto unitDto) {
         Unit unit = unitRepository.findById(id).orElseThrow(() -> new NotFoundException("Unidade não encontrada"));
@@ -75,17 +82,23 @@ public class UnitService {
     }
 
     @Transactional
-    public void deleteUnit(UUID idUnit) {
+    public void deleteUnit(UUID id) {
         try {
-            Unit oldUnit = unitRepository.findUnitById(idUnit);
+            Unit oldUnit = unitRepository.findById(id).orElseThrow(() -> new NotFoundException("Unidade não encontrada"));
 
             if (oldUnit == null) {
-                throw new Exception("The unit with the same id does not exist");
+                throw new Exception("Não existe uma unidade com esse id: " + id + " para ser deletada.");
             } else {
                 unitRepository.delete(oldUnit);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public UnitStatsResponseDto getUnitStats() {
+        Long totalUnits = unitRepository.getCountUnits();
+        UnitResponseDto unit = new UnitResponseDto(unitRepository.findLastInsert().orElseThrow(() -> new NotFoundException("Nenhuma Unidade adicionada!")));
+        return new UnitStatsResponseDto(totalUnits, unit);
     }
 }
