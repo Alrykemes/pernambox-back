@@ -71,7 +71,10 @@ CREATE TABLE product
     validity    DATE         NOT NULL,
     quantity    BIGINT       NOT NULL,
     gtin        VARCHAR(14)  NOT NULL,
-    description VARCHAR(255) NOT NULL
+    description VARCHAR(255) NOT NULL,
+    origin_id   UUID         NOT NULL,
+    CONSTRAINT  fk_product_origin_id FOREIGN KEY (origin_id)
+        REFERENCES origin (id) ON DELETE CASCADE
 );
 
 CREATE TABLE resource_product
