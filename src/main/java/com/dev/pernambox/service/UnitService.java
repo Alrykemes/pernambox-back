@@ -29,7 +29,6 @@ public class UnitService {
         return unitRepository.findAll();
     }
 
-    @Transactional
     public Unit saveUnit(UnitCreateRequestDto unitDto) {
         AddressRequestDto newAddress = unitDto.address();
         Address address = new Address(newAddress);
