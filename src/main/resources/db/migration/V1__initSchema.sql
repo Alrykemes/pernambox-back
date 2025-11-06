@@ -85,7 +85,7 @@ CREATE TABLE resource_product
 );
 
 CREATE TYPE operation_type AS ENUM ('CREATE','UPDATE','DELETE');
-CREATE TYPE operation_target AS ENUM ('UNIT','USER','PRODUCT','RESOURCE','RESOURCE_PRODUCT','ORIGIN', 'DESTINATION');
+CREATE TYPE operation_target AS ENUM ('UNIT','USER','PRODUCT','RESOURCE','RESOURCE_PRODUCT','ORIGIN', 'PRODUCT_RESOURCE_ORIGIN', 'DESTINATION');
 
 CREATE TABLE operation
 (
@@ -104,7 +104,7 @@ CREATE TABLE operation
 );
 
 CREATE TYPE document_type AS ENUM ('CPF','CNPJ');
-CREATE TYPE origin_type AS ENUM ('PRODUCT', 'RESOURCE');
+CREATE TYPE origin_type AS ENUM ('DONATION', 'BUY','OTHERS');
 
 CREATE TABLE origin
 (
@@ -114,10 +114,19 @@ CREATE TABLE origin
     document        document_type NOT NULL,
     date            DATE          NOT NULL,
     origin          origin_type   NOT NULL,
-    target_id       UUID          NOT NULL,
     SEI_process     INTEGER,
     "order"         VARCHAR(255),
     documents_name  VARCHAR(255)  NOT NULL
+);
+
+CREATE TABLE product_resource_origin(
+    created_at          TIMESTAMP        NOT NULL,
+    product_id          UUID             NOT NULL,
+    origin_id           UUID             NOT NULL,
+    CONSTRAINT fk_product_resource_origin_product_id FOREIGN KEY (product_id)
+        REFERENCES product (id) ON DELETE CASCADE,
+    CONSTRAINT fk_product_resource_origin_origin_id FOREIGN KEY (origin_id)
+        REFERENCES origin (id) ON DELETE CASCADE
 );
 
 CREATE TABLE refresh_token
