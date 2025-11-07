@@ -121,10 +121,13 @@ CREATE TABLE origin
 
 CREATE TABLE product_resource_origin(
     created_at          TIMESTAMP        NOT NULL,
-    product_id          UUID             NOT NULL,
+    product_id          UUID,
+    resource_id         UUID,
     origin_id           UUID             NOT NULL,
     CONSTRAINT fk_product_resource_origin_product_id FOREIGN KEY (product_id)
         REFERENCES product (id) ON DELETE CASCADE,
+    CONSTRAINT fk_product_resource_origin_resource_id FOREIGN KEY (resource_id)
+        REFERENCES resource (id) ON DELETE CASCADE,
     CONSTRAINT fk_product_resource_origin_origin_id FOREIGN KEY (origin_id)
         REFERENCES origin (id) ON DELETE CASCADE
 );
