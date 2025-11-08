@@ -2,8 +2,8 @@ global:
   scrape_interval: 10s
 
 scrape_configs:
-  - job_name: 'spring-boot'
+  - job_name: 'pernambox-backend'
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets:
-          - localhost:8080
+          - backend:8080

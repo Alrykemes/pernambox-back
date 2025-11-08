@@ -2,18 +2,19 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 
-CREATE TYPE role_type AS ENUM ('ADMIN','USER');
+CREATE TYPE role_type AS ENUM ('ADMIN_MASTER','ADMIN','USER');
 
 CREATE TABLE users
 (
-    id       UUID PRIMARY KEY      DEFAULT uuid_generate_v4(),
-    name     VARCHAR(255) NOT NULL,
-    cpf      CHAR(11)     NOT NULL UNIQUE,
-    email    VARCHAR(255) NOT NULL UNIQUE,
-    phone    VARCHAR(14)  UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    active   BOOLEAN      NOT NULL,
-    role     role_type    NOT NULL DEFAULT 'USER'
+    id            UUID PRIMARY KEY      DEFAULT uuid_generate_v4(),
+    name          VARCHAR(255) NOT NULL,
+    cpf           CHAR(11)     NOT NULL UNIQUE,
+    email         VARCHAR(255) NOT NULL UNIQUE,
+    phone         VARCHAR(14) UNIQUE,
+    password      VARCHAR(255) NOT NULL,
+    active        BOOLEAN      NOT NULL,
+    image_profile VARCHAR(255) UNIQUE,
+    role          role_type    NOT NULL DEFAULT 'USER'
 );
 
 CREATE TABLE address_unit
@@ -31,15 +32,15 @@ CREATE TABLE address_unit
 
 CREATE TABLE unit
 (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name            VARCHAR(150) NOT NULL,
-    phone           VARCHAR(11)  NOT NULL,
-    email           VARCHAR(255) NOT NULL,
-    responsible_id  UUID         NOT NULL,
---     active BOOLEAN NOT NULL,
-    created_at      TIMESTAMP    NOT NULL,
-    description     VARCHAR(255),
-    address_id      UUID         NOT NULL UNIQUE,
+    id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name           VARCHAR(150) NOT NULL,
+    phone          VARCHAR(11)  NOT NULL,
+    email          VARCHAR(255) NOT NULL,
+    responsible_id UUID         NOT NULL,
+    active         BOOLEAN      NOT NULL,
+    created_at     TIMESTAMP    NOT NULL,
+    description    VARCHAR(255),
+    address_id     UUID         NOT NULL UNIQUE,
     CONSTRAINT fk_unit_responsible FOREIGN KEY (responsible_id)
         REFERENCES users (id) ON DELETE RESTRICT,
     CONSTRAINT fk_unit_address_id FOREIGN KEY (address_id)
