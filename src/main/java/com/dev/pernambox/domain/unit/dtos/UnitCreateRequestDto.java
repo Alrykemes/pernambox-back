@@ -2,16 +2,23 @@ package com.dev.pernambox.domain.unit.dtos;
 
 
 import com.dev.pernambox.domain.address.dtos.AddressRequestDto;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.UUID;
 
 public record UnitCreateRequestDto(
-        @NotBlank @Size(max = 150) String name,
-        @NotNull UUID responsible_id,
-        @NotBlank @Size(max = 11)  String phone,
-        @NotBlank @Size(max = 255) String email,
-        @NotNull AddressRequestDto address
+        @NotBlank
+        @Size(min = 6, max = 150, message = "O nome precisa ter no mínimo 6 caracteres e no máximo 150")
+        String name,
+        @NotNull(message = "responsible_id não pode ser nulo")
+        UUID responsible_id,
+        @NotBlank @Size(min = 11, max = 11, message = "O telefone precisa ter 11 carateres")
+        String phone,
+        @NotBlank @Email(message = "Email precisa ser um email válido")
+        String email,
+        @NotNull(message = "address não pode ser nulo")
+        AddressRequestDto address
 ) {
 }

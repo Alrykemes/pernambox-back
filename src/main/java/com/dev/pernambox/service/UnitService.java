@@ -3,10 +3,7 @@ package com.dev.pernambox.service;
 import com.dev.pernambox.domain.address.Address;
 import com.dev.pernambox.domain.address.dtos.AddressRequestDto;
 import com.dev.pernambox.domain.unit.Unit;
-import com.dev.pernambox.domain.unit.dtos.UnitCreateRequestDto;
-import com.dev.pernambox.domain.unit.dtos.UnitResponseDto;
-import com.dev.pernambox.domain.unit.dtos.UnitStatsResponseDto;
-import com.dev.pernambox.domain.unit.dtos.UnitUpdateRequestDto;
+import com.dev.pernambox.domain.unit.dtos.*;
 import com.dev.pernambox.domain.user.User;
 import com.dev.pernambox.exceptions.NotFoundException;
 import com.dev.pernambox.repositories.UnitRepository;
@@ -52,8 +49,8 @@ public class UnitService {
     }
 
     @Transactional
-    public Unit updateUnit(UUID id,  UnitUpdateRequestDto unitDto) {
-        Unit unit = unitRepository.findById(id).orElseThrow(() -> new NotFoundException("Unidade não encontrada"));
+    public Unit updateUnit(UUID id, UnitUpdateRequestDto unitDto) {
+        Unit unit = unitRepository.findById(id).orElseThrow(() -> new NotFoundException("Unidade não encontrada para ser atualizada"));
 
         if (unitDto.name() != null) unit.setName(unitDto.name());
         if (unitDto.responsible_id() != null) {
@@ -82,22 +79,13 @@ public class UnitService {
 
     @Transactional
     public void deleteUnit(UUID id) {
-        try {
-            Unit oldUnit = unitRepository.findById(id).orElseThrow(() -> new NotFoundException("Unidade não encontrada"));
-
-            if (oldUnit == null) {
-                throw new Exception("Não existe uma unidade com esse id: " + id + " para ser deletada.");
-            } else {
-                unitRepository.delete(oldUnit);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        Unit unit = unitRepository.findById(id).orElseThrow(() -> new NotFoundException("Unidade não encontrada para ser deletada"));
+        unitRepository.delete(unit);
     }
 
     public UnitStatsResponseDto getUnitStats() {
-        Long totalUnits = unitRepository.getCountUnits();
+        PreStatsUnitDto preStatsUnit = unitRepository.getCountUnits();
         UnitResponseDto unit = new UnitResponseDto(unitRepository.findLastInsert().orElseThrow(() -> new NotFoundException("Nenhuma Unidade adicionada!")));
-        return new UnitStatsResponseDto(totalUnits, unit);
+        return new UnitStatsResponseDto(preStatsUnit.totalUnits(), preStatsUnit.unitsActives(), preStatsUnit.unitsDeactivates(), unit);
     }
 }

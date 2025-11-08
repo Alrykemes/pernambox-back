@@ -49,6 +49,9 @@ public class User implements UserDetails {
     @Column(name = "active", nullable = false)
     private Boolean active;
 
+    @Column(name = "image_profile")
+    private String imageProfile;
+
     @Convert(converter = RoleConverter.class)
     @Type(PostgreRoleEnum.class)
     @Column(name = "role", columnDefinition = "role_type", nullable = false)
@@ -56,7 +59,9 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (this.role == Role.ADMIN) {
+        if (this.role == Role.ADMIN_MASTER) {
+            return List.of(new SimpleGrantedAuthority("ADMIN_MASTER"), new SimpleGrantedAuthority("ADMIN"), new SimpleGrantedAuthority("USER"));
+        } else if(this.role == Role.ADMIN) {
             return List.of(new SimpleGrantedAuthority("ADMIN"), new SimpleGrantedAuthority("USER"));
         } else {
             return List.of(new SimpleGrantedAuthority("USER"));

@@ -43,6 +43,9 @@ public class Unit {
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
+    @Column(name = "active", nullable = false)
+    private Boolean active;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
