@@ -49,20 +49,20 @@ public class AuthController {
         User user = userService.getUserByEmail(body.email());
 
         if (!passwordEncoder.matches(body.password(), user.getPassword())) {
-            throw new AuthenticationException("Invalid credentials");
+            throw new AuthenticationException("Credenciais de Login Inválidas!");
         }
 
-        String acessToken = jwtTokenService.generateToken(
+        String accessToken = jwtTokenService.generateToken(
                 user,
                 RequestUtils.getRequestIp(request),
                 RequestUtils.getRequestUserAgent(request)
         );
 
+        UUID newToken = UUID.randomUUID();
+
         RefreshToken newRefreshToken = new RefreshToken();
         newRefreshToken.setUser(user);
         newRefreshToken.setExpirationDate(LocalDateTime.now().plusDays(15));
-
-        UUID newToken = UUID.randomUUID();
 
         try {
             RefreshToken refreshTokenFromDb = refreshTokenService.findByUserId(user.getId());
@@ -70,18 +70,18 @@ public class AuthController {
         } catch (NotFoundException e) {
             refreshTokenService.save(newRefreshToken);
             this.setRefreshTokenCookies(response, newRefreshToken.getToken());
-            return ResponseEntity.ok(new LoginResponseDto(user, acessToken));
+            return ResponseEntity.ok(new LoginResponseDto(user, accessToken));
         }
 
         this.setRefreshTokenCookies(response, newToken);
-        return ResponseEntity.ok(new LoginResponseDto(user, acessToken));
+        return ResponseEntity.ok(new LoginResponseDto(user, accessToken));
     }
 
     @GetMapping("/me")
     @Operation(summary = "Verifica autenticação do usuário", description = "Verifica autenticação do usuário a partir da" +
             " jwt, e retorna todas as informações dele")
     public ResponseEntity<UserResponseDto> me(Authentication authentication) {
-        if (authentication == null) throw new AuthenticationException("Auth Required to this Path");
+        if (authentication == null) throw new AuthenticationException("Authenticação é necessária nesse caminho!");
 
         User user = (User) authentication.getPrincipal();
 
@@ -93,16 +93,27 @@ public class AuthController {
             "do cookie http-only se o RefreshToken estiver espirado retorna erro")
     public ResponseEntity<LoginResponseDto> refreshToken(HttpServletRequest request, HttpServletResponse response) {
 
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie c : cookies) {
+                if ("refreshToken".equals(c.getName())) {
+                    System.out.println("Received refreshToken cookie: " + c.getValue());
+                }
+            }
+        } else {
+            System.out.println("No cookies in request");
+        }
+
         RefreshToken refreshTokenFromCookie = refreshTokenService.getRefreshTokenByCookies(request);
 
         RefreshToken refreshTokenFromDb = refreshTokenService.findByUserId(refreshTokenFromCookie.getUser().getId());
 
         if (!refreshTokenFromDb.getToken().equals(refreshTokenFromCookie.getToken())) {
-            throw new AuthenticationException("RefreshToken is Invalid!");
+            throw new AuthenticationException("O RefreshToken é inválido!");
         }
 
         if (refreshTokenFromDb.getExpirationDate().isBefore(LocalDateTime.now())) {
-            throw new AuthenticationException("RefreshToken is Expired!");
+            throw new AuthenticationException("O RefreshToken está Expirado!");
         }
 
         UUID newToken = UUID.randomUUID();
@@ -115,7 +126,7 @@ public class AuthController {
 
         this.setRefreshTokenCookies(response, newToken);
 
-        String acessToken = jwtTokenService.generateToken(
+        String accessToken = jwtTokenService.generateToken(
                 refreshTokenFromCookie.getUser(),
                 RequestUtils.getRequestIp(request),
                 RequestUtils.getRequestUserAgent(request)
@@ -126,17 +137,40 @@ public class AuthController {
                         refreshTokenFromCookie.getUser().getId(),
                         refreshTokenFromCookie.getUser().getEmail(),
                         refreshTokenFromCookie.getUser().getRole(),
-                        acessToken
+                        accessToken
                 )
         );
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "Realiza logout do usuário", description = "Remove o refresh token do banco e limpa o cookie")
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+
+        RefreshToken refreshToken = refreshTokenService.getRefreshTokenByCookies(request);
+
+        System.out.println("teste 1: " + refreshToken);
+        System.out.println("teste 2: " + refreshToken.getToken());
+
+        refreshTokenService.deleteByToken(refreshToken.getToken());
+
+        Cookie cookie = new Cookie("refreshToken", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setPath("/auth");
+        cookie.setMaxAge(0);
+        cookie.setAttribute("SameSite", "Strict");
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok().build();
     }
 
     private void setRefreshTokenCookies(HttpServletResponse response, UUID token) {
         Cookie cookie = new Cookie("refreshToken", token.toString());
         cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/auth/refresh-token");
-        cookie.setMaxAge(15 * 60 * 24 * 30);
+        cookie.setSecure(false);
+        cookie.setPath("/auth");
+        cookie.setMaxAge(15 * 24 * 60 * 60);
+        cookie.setAttribute("SameSite", "Strict");
         response.addCookie(cookie);
     }
 }

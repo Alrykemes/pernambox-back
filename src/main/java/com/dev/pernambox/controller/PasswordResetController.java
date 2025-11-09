@@ -12,15 +12,15 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalTime;
 
+@Slf4j
 @RestController
 @RequestMapping("/auth/password-reset")
 @RequiredArgsConstructor
@@ -35,25 +35,24 @@ public class PasswordResetController {
     @PostMapping()
     @Operation(summary = "Envia email para reset de senha", description = "Envia email para reset de senha com código " +
             "OTP, e retorna se foi enviado com sucesso, id do usuário e tempo em que o código irá expirar.")
-    public ResponseEntity<PasswordResetOtpResponseDto> initiatePasswordReset(
-            @RequestParam
-            @NotBlank(message = "email is required")
-            @Email(message = "email must be a valid email")
-            String email
+    public ResponseEntity<InitiatePasswordResetResponseDto> initiatePasswordReset(
+            @Valid
+            @RequestBody
+            InitiatePasswordResetRequestDto body
     ) {
-        User user = userService.getUserByEmail(email);
+        User user = userService.getUserByEmail(body.email());
         String otpCode = redisService.generateOtpCode(user.getId());
-        emailService.sendEmail(email, "Pernambox - Recuperação Senha", "Seu código de recuperação de senha: " + otpCode);
-        return ResponseEntity.ok(new PasswordResetOtpResponseDto(true, user.getId(), LocalTime.now().plusMinutes(15)));
+        emailService.sendEmail(body.email(), "Pernambox - Recuperação Senha", "Seu código de recuperação de senha: " + otpCode);
+        return ResponseEntity.ok(new InitiatePasswordResetResponseDto(true, user.getId(), LocalTime.now().plusMinutes(15)));
     }
 
     @PostMapping("/validate-otp")
     @Operation(summary = "Valida código OTP", description = "Valida código OTP que usuário recebeu por email " +
             "e retorna a Jwt que pode ser usada para alterar a senha.")
-    public ResponseEntity<VerifyOTPResponseDto> verifyOTP(@RequestBody VerifyOTPRequestDto body, HttpServletRequest request) {
+    public ResponseEntity<VerifyOTPResponseDto> validateOTP(@Valid @RequestBody VerifyOTPRequestDto body, HttpServletRequest request) {
         redisService.validateOtp(body.userId(), body.otpCode());
 
-        User user = userService.getUserById(body.userId().toString());
+        User user = userService.getUserById(body.userId());
 
         String token = jwtTokenService.generatePasswordResetToken(
                 body.userId(),
@@ -82,7 +81,8 @@ public class PasswordResetController {
         if (userService.changeUserPassword(user.getId(), body.password())) {
             return ResponseEntity.ok().build();
         } else {
-            throw new PasswordResetException("Failed to reset password in DB");
+            log.error("Falha ao Resetar a senha no Banco de dados. \n User: {} \n Token: {}", user.getId(), token);
+            throw new PasswordResetException("Falha ao resetar a senha!");
         }
     }
 
