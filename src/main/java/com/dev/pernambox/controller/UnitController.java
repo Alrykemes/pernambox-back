@@ -4,12 +4,16 @@ import com.dev.pernambox.domain.unit.Unit;
 import com.dev.pernambox.domain.unit.dtos.UnitCreateRequestDto;
 import com.dev.pernambox.domain.unit.dtos.UnitStatsResponseDto;
 import com.dev.pernambox.domain.unit.dtos.UnitUpdateRequestDto;
+import com.dev.pernambox.domain.user.User;
+import com.dev.pernambox.domain.user.enums.Role;
+import com.dev.pernambox.exceptions.AuthorizationException;
 import com.dev.pernambox.service.UnitService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -32,7 +36,7 @@ public class UnitController {
         return ResponseEntity.ok(unitService.findAll());
     }
 
-    @PostMapping()
+    @PostMapping("/create")
     @Operation(summary = "Adiciona unidade", description = "Faz a inserção de uma unidade")
     public ResponseEntity<Unit> saveUnit(@Valid @RequestBody UnitCreateRequestDto unitDto, UriComponentsBuilder uriComponentsBuilder) {
         Unit newUnit = unitService.saveUnit(unitDto);
@@ -40,12 +44,11 @@ public class UnitController {
         return ResponseEntity.created(uri).body(newUnit);
     }
 
-    @PatchMapping("/{unitId}")
+    @PatchMapping("/update/{unitId}")
     @Operation(summary = "Atualiza unidade", description = "Faz a alteração da unidade desejada")
     public ResponseEntity<Unit> updateUnit(
             @PathVariable UUID unitId,
-            @Valid @RequestBody UnitUpdateRequestDto unitDto
-    ) {
+            @Valid @RequestBody UnitUpdateRequestDto unitDto) {
         return ResponseEntity.ok(unitService.updateUnit(unitId, unitDto));
     }
 
@@ -55,7 +58,7 @@ public class UnitController {
         return ResponseEntity.ok(unitService.getUnitStats());
     }
 
-    @DeleteMapping("/{unitId}")
+    @DeleteMapping("/delete/{unitId}")
     @Operation(summary = "Deleta uma unidade", description = "Faz a deleção de uma unidade")
     public void deleteUnit(@PathVariable UUID unitId) {
         unitService.deleteUnit(unitId);
