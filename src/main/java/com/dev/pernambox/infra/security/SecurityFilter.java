@@ -63,11 +63,13 @@ public class SecurityFilter extends OncePerRequestFilter {
                     }
                 }
 
-                if ((request.getRequestURI().equals("/auth/login") || request.getServletPath().equals("/auth/login"))
-                        && request.getMethod().equals("POST")) {
-                    if (!payloadToken.get("iss").asString().equals("login-auth")) {
-                        log.warn("IP: {} \n User agent: {}, \n Tentando utilizar Jwt inválida para login", ip, userAgent);
-                        handleJwtError(response, request, HttpStatus.UNAUTHORIZED, new PasswordResetException("Invalid token for reset password"));
+                // if token is for password reset
+                if (payloadToken.get("iss").asString().equals("password-reset")) {
+                    // and route is'not for password reset
+                    if (!((request.getRequestURI().equals("/auth/password-reset") || request.getServletPath().equals("/auth/password-reset")))
+                            && !(request.getMethod().equals("PATCH"))) {
+                        log.warn("IP: {} \n User agent: {}, \n Tentando utilizar Jwt inválida (de alterar senha) para acessar outros recursos", ip, userAgent);
+                        handleJwtError(response, request, HttpStatus.UNAUTHORIZED, new PasswordResetException("Invalid token for acess resources"));
                         return;
                     }
                 }
