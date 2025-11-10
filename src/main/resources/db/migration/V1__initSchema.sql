@@ -109,14 +109,11 @@ CREATE TYPE origin_type AS ENUM ('DONATION', 'BUY','OTHERS');
 CREATE TABLE origin
 (
     id              SERIAL PRIMARY KEY,
-    receipt         VARCHAR(255)  NOT NULL,
     cpf_cnpj_origin VARCHAR(14)   NOT NULL,
     document        document_type NOT NULL,
     date            DATE          NOT NULL,
     origin          origin_type   NOT NULL,
-    SEI_process     INTEGER,
-    "order"         VARCHAR(255),
-    documents_name  VARCHAR(255)  NOT NULL
+    SEI_process     INTEGER
 );
 
 CREATE TABLE product_resource_origin(
