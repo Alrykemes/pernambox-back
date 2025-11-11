@@ -127,13 +127,19 @@ CREATE TABLE origin
     document        document_type NOT NULL,
     date            DATE          NOT NULL,
     origin          origin_type   NOT NULL,
-    target_id       UUID          NOT NULL,
-    SEI_process     INTEGER,
-    "order"         VARCHAR(255),
-    documents_name  VARCHAR(255)  NOT NULL,
+    SEI_process     VARCHAR(255),
     unit_id UUID NOT NULL,
     CONSTRAINT fk_origin_unit_id FOREIGN KEY (unit_id)
         REFERENCES unit (id) ON DELETE CASCADE
+);
+
+CREATE TABLE document_origin(
+    id  SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    image VARCHAR(255) NOT NULL,
+    origin_id UUID NOT NULL,
+    CONSTRAINT fk_document_origin_origin_id FOREIGN KEY (origin_id)
+        REFERENCES origin (id) ON DELETE CASCADE
 );
 
 CREATE TABLE refresh_token
