@@ -1,5 +1,6 @@
 -- Extensão para gerar UUIDs automaticamente
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE
+EXTENSION IF NOT EXISTS "uuid-ossp";
 
 
 CREATE TYPE role_type AS ENUM ('ADMIN','USER');
@@ -10,7 +11,7 @@ CREATE TABLE users
     name     VARCHAR(255) NOT NULL,
     cpf      CHAR(11)     NOT NULL UNIQUE,
     email    VARCHAR(255) NOT NULL UNIQUE,
-    phone    VARCHAR(14)  UNIQUE,
+    phone    VARCHAR(14) UNIQUE,
     password VARCHAR(255) NOT NULL,
     active   BOOLEAN      NOT NULL,
     role     role_type    NOT NULL DEFAULT 'USER'
@@ -31,15 +32,15 @@ CREATE TABLE address_unit
 
 CREATE TABLE unit
 (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name            VARCHAR(150) NOT NULL,
-    phone           VARCHAR(11)  NOT NULL,
-    email           VARCHAR(255) NOT NULL,
-    responsible_id  UUID         NOT NULL,
+    id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name           VARCHAR(150) NOT NULL,
+    phone          VARCHAR(11)  NOT NULL,
+    email          VARCHAR(255) NOT NULL,
+    responsible_id UUID         NOT NULL,
 --     active BOOLEAN NOT NULL,
-    created_at      TIMESTAMP    NOT NULL,
-    description     VARCHAR(255),
-    address_id      UUID         NOT NULL UNIQUE,
+    created_at     TIMESTAMP    NOT NULL,
+    description    VARCHAR(255),
+    address_id     UUID         NOT NULL UNIQUE,
     CONSTRAINT fk_unit_responsible FOREIGN KEY (responsible_id)
         REFERENCES users (id) ON DELETE RESTRICT,
     CONSTRAINT fk_unit_address_id FOREIGN KEY (address_id)
@@ -49,15 +50,14 @@ CREATE TABLE unit
 
 CREATE TYPE status_type AS ENUM ('STABLE','UNSTABLE','CRITICAL');
 
-CREATE TYPE categories_resources AS ENUM ('HYGIENIC','HEALTH','FOOD','OTHERS');
+CREATE TYPE categories_resources AS ENUM ('HYGIENIC','HEALTH','FOOD','SHELTER','CLOTHING','OTHERS');
 
 CREATE TABLE resource
 (
-    id          UUID PRIMARY KEY              DEFAULT uuid_generate_v4(),
+    id          UUID PRIMARY KEY     DEFAULT uuid_generate_v4(),
     description VARCHAR(255)         NOT NULL,
     status      status_type          NOT NULL,
-    quantity    BIGINT               NOT NULL,
-    validity    DATE                 NOT NULL,
+    quantity     BIGINT               NOT NULL,
     category    categories_resources NOT NULL DEFAULT 'OTHERS',
     unit_id     UUID                 NOT NULL,
     qrcode      VARCHAR(255)         NOT NULL,
@@ -65,13 +65,27 @@ CREATE TABLE resource
         REFERENCES unit (id) ON DELETE CASCADE
 );
 
-CREATE TABLE product
+CREATE TABLE ref_product
 (
     id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    validity    DATE         NOT NULL,
-    quantity    BIGINT       NOT NULL,
     gtin        VARCHAR(14)  NOT NULL,
-    description VARCHAR(255) NOT NULL
+    description VARCHAR(255) NOT NULL,
+    avg_price   FLOAT        NOT NULL,
+    brand       VARCHAR(255) NOT NULL,
+    image       VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE product
+(
+    id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    validity       DATE   NOT NULL,
+    quantity       BIGINT NOT NULL,
+    ref_product_id UUID   NOT NULL,
+    origin_id      UUID   NOT NULL,
+    CONSTRAINT fk_ref_product_id FOREIGN KEY (ref_product_id)
+        REFERENCES ref_product (id) ON DELETE CASCADE,
+    CONSTRAINT fk_product_origin_id FOREIGN KEY (origin_id)
+        REFERENCES origin (id) ON DELETE CASCADE
 );
 
 CREATE TABLE resource_product
@@ -85,7 +99,7 @@ CREATE TABLE resource_product
 );
 
 CREATE TYPE operation_type AS ENUM ('CREATE','UPDATE','DELETE');
-CREATE TYPE operation_target AS ENUM ('UNIT','USER','PRODUCT','RESOURCE','RESOURCE_PRODUCT','ORIGIN', 'PRODUCT_RESOURCE_ORIGIN', 'DESTINATION');
+CREATE TYPE operation_target AS ENUM ('UNIT','USER','PRODUCT','RESOURCE','RESOURCE_PRODUCT','ORIGIN', 'DESTINATION');
 
 CREATE TABLE operation
 (
@@ -113,20 +127,13 @@ CREATE TABLE origin
     document        document_type NOT NULL,
     date            DATE          NOT NULL,
     origin          origin_type   NOT NULL,
-    SEI_process     INTEGER
-);
-
-CREATE TABLE product_resource_origin(
-    created_at          TIMESTAMP        NOT NULL,
-    product_id          UUID,
-    resource_id         UUID,
-    origin_id           UUID             NOT NULL,
-    CONSTRAINT fk_product_resource_origin_product_id FOREIGN KEY (product_id)
-        REFERENCES product (id) ON DELETE CASCADE,
-    CONSTRAINT fk_product_resource_origin_resource_id FOREIGN KEY (resource_id)
-        REFERENCES resource (id) ON DELETE CASCADE,
-    CONSTRAINT fk_product_resource_origin_origin_id FOREIGN KEY (origin_id)
-        REFERENCES origin (id) ON DELETE CASCADE
+    target_id       UUID          NOT NULL,
+    SEI_process     INTEGER,
+    "order"         VARCHAR(255),
+    documents_name  VARCHAR(255)  NOT NULL,
+    unit_id UUID NOT NULL,
+    CONSTRAINT fk_origin_unit_id FOREIGN KEY (unit_id)
+        REFERENCES unit (id) ON DELETE CASCADE
 );
 
 CREATE TABLE refresh_token
