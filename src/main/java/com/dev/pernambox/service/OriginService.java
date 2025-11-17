@@ -2,10 +2,12 @@ package com.dev.pernambox.service;
 
 import com.dev.pernambox.domain.origin.Origin;
 import com.dev.pernambox.domain.origin.dtos.OriginRequestDto;
+import com.dev.pernambox.domain.origin.dtos.OriginResponseDto;
 import com.dev.pernambox.domain.origin.dtos.OriginUpdateDto;
 import com.dev.pernambox.domain.origin.enums.DocumentType;
 import com.dev.pernambox.exceptions.CreateEntityException;
 import com.dev.pernambox.exceptions.NotFoundException;
+import com.dev.pernambox.exceptions.UpdateEntityException;
 import com.dev.pernambox.repositories.OriginRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -14,7 +16,9 @@ import org.hibernate.validator.internal.constraintvalidators.hv.br.CPFValidator;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @AllArgsConstructor
@@ -94,7 +98,14 @@ public class OriginService {
             return originRepository.save(newOrigin);
 
         } catch (Exception e) {
-            throw new CreateEntityException(e.getMessage());
+            throw new UpdateEntityException(e.getMessage());
         }
+    }
+
+    public List<OriginResponseDto> findAllOrigins() {
+        return originRepository.findAll()
+                .stream()
+                .map(OriginResponseDto::new)
+                .toList();
     }
 }
