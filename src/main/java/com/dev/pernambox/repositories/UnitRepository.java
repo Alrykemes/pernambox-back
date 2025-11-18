@@ -18,6 +18,6 @@ public interface UnitRepository extends JpaRepository<Unit, UUID> {
             """)
     PreStatsUnitDto getCountUnits();
 
-    @Query("SELECT u FROM Unit u ORDER BY u.createdAt DESC")
+    @Query("SELECT u FROM Unit u ORDER BY u.createdAt DESC LIMIT 1")
     Optional<Unit> findLastInsert();
 }

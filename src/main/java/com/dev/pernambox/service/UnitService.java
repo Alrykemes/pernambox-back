@@ -39,6 +39,7 @@ public class UnitService {
         unit.setResponsible(responsible);
         unit.setPhone(unitDto.phone());
         unit.setEmail(unitDto.email());
+        unit.setActive(true);
         unit.setAddress(address);
 
         return unitRepository.save(unit);
@@ -60,6 +61,7 @@ public class UnitService {
         }
         if (unitDto.phone() != null) unit.setPhone(unitDto.phone());
         if (unitDto.email() != null) unit.setEmail(unitDto.email());
+        if (unitDto.active() != null) unit.setActive(unitDto.active());
 
         if (unitDto.address() != null) {
             AddressRequestDto a = unitDto.address();
