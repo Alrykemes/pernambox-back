@@ -7,7 +7,6 @@ import com.dev.pernambox.domain.user.dtos.UserUpdateDto;
 import com.dev.pernambox.domain.user.enums.Role;
 import com.dev.pernambox.exceptions.*;
 import com.dev.pernambox.repositories.UserRepository;
-import com.dev.pernambox.utils.CpfUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -96,6 +96,14 @@ public class UserService {
         return userRepository.getAll(pageable);
     }
 
+    public List<User> getAllUsersAdminsMasters() {
+        return userRepository.getAllAdminsMasters();
+    }
+
+    public List<User> getAllUsersAdmins() {
+        return userRepository.getAllAdmins();
+    }
+
     public StatsUsersResponseDto getUsersStats() {
         return this.userRepository.getUsersStats();
     }
@@ -120,6 +128,7 @@ public class UserService {
         user.setCpf(updateDto.cpf() == null ? user.getCpf() : updateDto.cpf());
         user.setPhone(updateDto.phone() == null ? user.getPhone() : updateDto.phone());
         user.setActive(updateDto.active() == null ? user.getActive() : updateDto.active());
+        user.setImageProfile(updateDto.imageProfile() == null ? user.getImageProfile() : updateDto.imageProfile());
         user.setPassword(updateDto.newPassword() == null ? user.getPassword() : passwordEncoder.encode(updateDto.newPassword()));
     }
 }

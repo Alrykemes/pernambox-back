@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -66,6 +67,18 @@ public class UserController {
     @Operation(summary = "Retorna usuário pelo id")
     public ResponseEntity<UserResponseDto> getUserById(@PathVariable UUID userId) {
         return ResponseEntity.ok(new UserResponseDto(userService.getUserById(userId)));
+    }
+
+    @GetMapping("/all/admins-masters")
+    @Operation(summary = "Retorna todos os usuários admins masters")
+    public ResponseEntity<List<UserResponseDto>> getUsersAdminsMasters() {
+        return ResponseEntity.ok(userService.getAllUsersAdminsMasters().stream().map(UserResponseDto::new).toList());
+    }
+
+    @GetMapping("/all/admins")
+    @Operation(summary = "Retorna todos os usuários admins")
+    public ResponseEntity<List<UserResponseDto>> getUsersAdmins() {
+        return ResponseEntity.ok(userService.getAllUsersAdmins().stream().map(UserResponseDto::new).toList());
     }
 
     @GetMapping("/stats")

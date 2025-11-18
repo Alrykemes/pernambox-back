@@ -1,5 +1,6 @@
 package com.dev.pernambox.controller;
 
+import com.dev.pernambox.domain.file.dtos.FileResponseDto;
 import com.dev.pernambox.exceptions.UploadFilesException;
 import com.dev.pernambox.service.MinioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,7 +25,7 @@ public class FileController {
     @PostMapping("/upload")
     @Operation(summary = "Realiza upload de arquivos", description = "Upload de um ou mais arquivos de qualquer tipo, " +
             "imagem, pdf, docx, xlsx, entre outros")
-    public ResponseEntity<String> upload(@RequestParam List<MultipartFile> files) throws Exception {
+    public ResponseEntity<FileResponseDto> upload(@RequestParam List<MultipartFile> files) throws Exception {
         List<String> fileNames = new ArrayList<>();
         files.forEach(file -> {
             try {
@@ -34,9 +35,8 @@ public class FileController {
                 throw new UploadFilesException("Erro ao fazer upload do arquivo " + file.getOriginalFilename());
             }
         });
-        return fileNames.size() > 1 ?
-                ResponseEntity.ok("Arquivos: \n" + fileNames + "\n salvos com sucesso!") :
-                ResponseEntity.ok("Arquivo: " + fileNames.getFirst() + " salvo com sucesso!");
+
+        return ResponseEntity.ok(new FileResponseDto(fileNames.size(), fileNames));
     }
 
     @GetMapping("/url/{nome}")

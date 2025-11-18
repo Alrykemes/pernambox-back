@@ -16,5 +16,6 @@ public record UnitUpdateRequestDto(
         String phone,
         @Email(message = "Email precisa ser um email válido")
         String email,
+        Boolean active,
         AddressRequestDto address
 ) {}
