@@ -83,6 +83,12 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.NOT_FOUND, "Update Entity Error", ex.getMessage(), request);
     }
 
+    @ExceptionHandler(DeleteEntityException.class)
+    public ResponseEntity<ErrorResponseDto> handleDeleteEntityException(NotFoundException ex, HttpServletRequest request) {
+        log.error("Error to delete in DB: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.NOT_FOUND, "Delete Entity Error", ex.getMessage(), request);
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponseDto> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, HttpServletRequest request) {
         log.error("Body error: {}", ex.getMessage());
