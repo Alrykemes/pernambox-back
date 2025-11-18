@@ -105,6 +105,6 @@ public class JwtTokenService {
     }
 
     private Instant generateExpirationDateMinutes() {
-        return LocalDateTime.now().plusMinutes((1)).toInstant(ZoneOffset.of("-03:00"));
+        return LocalDateTime.now().plusMinutes((15)).toInstant(ZoneOffset.of("-03:00"));
     }
 }
