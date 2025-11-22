@@ -38,6 +38,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // NOAUTH
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/logout").permitAll()
                         .requestMatchers(HttpMethod.GET, "/auth/refresh-token").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/password-reset").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/password-reset/validate-otp").permitAll()
@@ -45,12 +46,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/actuator/prometheus").permitAll()
                         .requestMatchers(HttpMethod.GET, SWAGGER_WHITELIST).permitAll()
                         // AUTH ADMIN_MASTER
-                        .requestMatchers(HttpMethod.POST, "/unit/create").hasRole("ADMIN_MASTER")
-                        .requestMatchers(HttpMethod.POST, "/unit/delete").hasRole("ADMIN_MASTER")
-                        .requestMatchers(HttpMethod.POST, "/unit/update").hasRole("ADMIN_MASTER")
+                        .requestMatchers(HttpMethod.POST, "/unit/create").hasAuthority("ADMIN_MASTER")
+                        .requestMatchers(HttpMethod.DELETE, "/unit/delete").hasAuthority("ADMIN_MASTER")
+                        .requestMatchers(HttpMethod.PUT, "/unit/update").hasAuthority("ADMIN_MASTER")
                         // AUTH ADMIN/ADMIN_MASTER
-                        .requestMatchers(HttpMethod.POST, "/user/create").hasAnyRole("ADMIN_MASTER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/user/admin/update").hasAnyRole("ADMIN_MASTER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/user/create").hasAnyAuthority("ADMIN_MASTER", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/user/admin/update").hasAnyAuthority("ADMIN_MASTER", "ADMIN")
                         // AUTH
                         .anyRequest().authenticated()
                 )
