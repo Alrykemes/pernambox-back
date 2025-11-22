@@ -2,6 +2,9 @@ package com.dev.pernambox.service;
 
 import com.dev.pernambox.domain.address.Address;
 import com.dev.pernambox.domain.address.dtos.AddressRequestDto;
+import com.dev.pernambox.domain.operation.dtos.OperationWithoutUnitDto;
+import com.dev.pernambox.domain.operation.enums.OperationTarget;
+import com.dev.pernambox.domain.operation.enums.OperationType;
 import com.dev.pernambox.domain.unit.Unit;
 import com.dev.pernambox.domain.unit.dtos.*;
 import com.dev.pernambox.domain.user.User;
@@ -9,10 +12,10 @@ import com.dev.pernambox.exceptions.NotFoundException;
 import com.dev.pernambox.repositories.UnitRepository;
 import com.dev.pernambox.repositories.UserRepository;
 import lombok.AllArgsConstructor;
-import org.checkerframework.checker.units.qual.N;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,12 +24,13 @@ import java.util.UUID;
 public class UnitService {
     private final UnitRepository unitRepository;
     private final UserRepository userRepository;
+    private final OperationService operationService;
 
     public List<Unit> findAll() {
         return unitRepository.findAll();
     }
 
-    public Unit saveUnit(UnitCreateRequestDto unitDto) {
+    public Unit saveUnit(UnitCreateRequestDto unitDto, User userResponsible) {
         AddressRequestDto newAddress = unitDto.address();
         Address address = new Address(newAddress);
 
@@ -40,6 +44,17 @@ public class UnitService {
         unit.setPhone(unitDto.phone());
         unit.setEmail(unitDto.email());
         unit.setAddress(address);
+
+        String descriptionOp = "O usuário " + userResponsible.getName() + " de id " + userResponsible.getId().toString()
+                + " Criou a unidade " + unit.getName() + " de id " + unit.getId().toString();
+
+        operationService.createOperation(new OperationWithoutUnitDto(
+                OperationType.CREATE,
+                OperationTarget.UNIT,
+                descriptionOp,
+                unit.getId(),
+                userResponsible.getId()
+        ));
 
         return unitRepository.save(unit);
     }
@@ -74,13 +89,15 @@ public class UnitService {
             address.setComplement(a.complement());
 
         }
+
         return unitRepository.save(unit);
     }
 
     @Transactional
-    public void deleteUnit(UUID id) {
+    public Unit deleteUnit(UUID id) {
         Unit unit = unitRepository.findById(id).orElseThrow(() -> new NotFoundException("Unidade não encontrada para ser deletada"));
         unitRepository.delete(unit);
+        return unit;
     }
 
     public UnitStatsResponseDto getUnitStats() {

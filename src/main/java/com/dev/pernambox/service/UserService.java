@@ -1,5 +1,8 @@
 package com.dev.pernambox.service;
 
+import com.dev.pernambox.domain.operation.dtos.OperationWithoutUnitDto;
+import com.dev.pernambox.domain.operation.enums.OperationTarget;
+import com.dev.pernambox.domain.operation.enums.OperationType;
 import com.dev.pernambox.domain.user.User;
 import com.dev.pernambox.domain.user.dtos.UserRequestDto;
 import com.dev.pernambox.domain.user.dtos.StatsUsersResponseDto;
@@ -23,6 +26,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final OperationService operationService;
 
     public User save(UserRequestDto userRequestDto) {
         if(this.userRepository.existsByCpfEquals(userRequestDto.cpf())) {
@@ -44,9 +48,12 @@ public class UserService {
         return this.userRepository.save(newUser);
     }
 
-    public void deleteUser(UUID userId) {
-        this.userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+    public User deleteUser(UUID userId) {
+        User user = this.userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+
         this.userRepository.deleteById(userId);
+
+        return user;
     }
 
     public User getUserByEmail(String email) {

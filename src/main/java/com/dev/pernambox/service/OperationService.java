@@ -1,96 +1,90 @@
 package com.dev.pernambox.service;
 
 import com.dev.pernambox.domain.operation.Operation;
-import com.dev.pernambox.domain.operation.dtos.OperationRequestDto;
+import com.dev.pernambox.domain.operation.dtos.OperationWithUnitDto;
+import com.dev.pernambox.domain.operation.dtos.OperationWithoutUnitDto;
 import com.dev.pernambox.domain.operation.enums.OperationTarget;
 import com.dev.pernambox.exceptions.CreateEntityException;
 import com.dev.pernambox.exceptions.NotFoundException;
 import com.dev.pernambox.repositories.OperationRepository;
+import com.dev.pernambox.repositories.UnitRepository;
+import com.dev.pernambox.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @AllArgsConstructor
 @Service
 public class OperationService {
     private final OperationRepository operationRepository;
-    private final UserService userService;
-    private final UnitService unitService;
+    private final UserRepository userRepository;
+    private final UnitRepository unitRepository;
 
     public Page<Operation> getAllOperations(int page, int size) {
         Pageable pageable = Pageable.ofSize(size).withPage(page);
         return this.operationRepository.findAll(pageable);
     }
 
-    public Operation createOperation(OperationRequestDto operationDto) {
+    public void createOperation(OperationWithoutUnitDto operationDto) {
         Operation newOperation = new Operation(operationDto);
 
-        newOperation.setUser(userService.getUserById(operationDto.userId()));
-        newOperation.setUnit(unitService.findUnitById(operationDto.unitId()));
-        this.verifyTarget(operationDto);
-        newOperation.setOperationDate(new Date());
+        newOperation.setUser(userRepository.findById(operationDto.userId()).orElseThrow(() -> new NotFoundException("User Not Found!")));
+        this.verifyTarget(operationDto.operationTarget(), operationDto.targetId());
+        newOperation.setOperationDate(LocalDateTime.now());
 
-        return this.operationRepository.save(newOperation);
+        this.operationRepository.save(newOperation);
+    }
+
+    public void createOperation(OperationWithUnitDto operationDto) {
+        Operation newOperation = new Operation(operationDto);
+
+        newOperation.setUser(userRepository.findById(operationDto.userId()).orElseThrow(() -> new NotFoundException("User Not Found!")));
+        this.verifyTarget(operationDto.operationTarget(), operationDto.targetId());
+        newOperation.setOperationDate(LocalDateTime.now());
+
+        this.operationRepository.save(newOperation);
     }
 
     public Operation getOperationById(UUID id) {
         return this.operationRepository.findById(id).orElseThrow(() -> new NotFoundException("Operation Não encontrada!"));
     }
 
-    private void verifyTarget(OperationRequestDto operationDto) {
-        if(operationDto.operationTarget().equals(OperationTarget.USER)) {
-            try {
-                userService.getUserById(operationDto.targetId());
-            } catch (NotFoundException ex) {
-                throw new CreateEntityException("Erro ao registrar alteração, id alvo inválido!");
-            }
+    private void verifyTarget(OperationTarget operationTarget, UUID uuid) {
+        if (operationTarget.equals(OperationTarget.USER)) {
+            userRepository.findById(uuid).orElseThrow(() -> new NotFoundException("User Not Found!"));
         }
-        if(operationDto.operationTarget().equals(OperationTarget.UNIT)) {
-            try {
-                userService.getUserById(operationDto.targetId());
-            } catch (NotFoundException ex) {
-                throw new CreateEntityException("Erro ao registrar alteração, id alvo inválido!");
-            }
+
+        if (operationTarget.equals(OperationTarget.UNIT)) {
+            unitRepository.findById(uuid).orElseThrow(() -> new NotFoundException("User Not Found!"));
         }
-        if(operationDto.operationTarget().equals(OperationTarget.PRODUCT)) {
-            try {
-                userService.getUserById(operationDto.targetId());
-            } catch (NotFoundException ex) {
-                throw new CreateEntityException("Erro ao registrar alteração, id alvo inválido!");
-            }
+
+        if (operationTarget.equals(OperationTarget.PRODUCT)) {
+//                userService.getUserById(operationDto.targetId());
+//                Pegar de product repository
         }
-        if(operationDto.operationTarget().equals(OperationTarget.RESOURCE)) {
-            try {
-                userService.getUserById(operationDto.targetId());
-            } catch (NotFoundException ex) {
-                throw new CreateEntityException("Erro ao registrar alteração, id alvo inválido!");
-            }
+
+        if (operationTarget.equals(OperationTarget.RESOURCE)) {
+//                userService.getUserById(operationDto.targetId());
+//                pegar de resource repository
         }
-        if(operationDto.operationTarget().equals(OperationTarget.RESOURCE_PRODUCT)) {
-            try {
-                userService.getUserById(operationDto.targetId());
-            } catch (NotFoundException ex) {
-                throw new CreateEntityException("Erro ao registrar alteração, id alvo inválido!");
-            }
+
+        if (operationTarget.equals(OperationTarget.RESOURCE_PRODUCT)) {
+//                userService.getUserById(operationDto.targetId());
+//                pegar de resource repository
         }
-        if(operationDto.operationTarget().equals(OperationTarget.ORIGIN)) {
-            try {
-                userService.getUserById(operationDto.targetId());
-            } catch (NotFoundException ex) {
-                throw new CreateEntityException("Erro ao registrar alteração, id alvo inválido!");
-            }
+
+        if (operationTarget.equals(OperationTarget.ORIGIN)) {
+//                userService.getUserById(operationDto.targetId());
+//                pegar de origin repository
         }
-        if(operationDto.operationTarget().equals(OperationTarget.DESTINATION)) {
-            try {
-                userService.getUserById(operationDto.targetId());
-            } catch (NotFoundException ex) {
-                throw new CreateEntityException("Erro ao registrar alteração, id alvo inválido!");
-            }
+
+        if (operationTarget.equals(OperationTarget.DESTINATION)) {
+//                userService.getUserById(operationDto.targetId());
+//                pegar de destination repository
         }
     }
 }
