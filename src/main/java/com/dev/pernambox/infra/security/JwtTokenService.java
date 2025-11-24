@@ -7,6 +7,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.Claim;
 import com.dev.pernambox.domain.user.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class JwtTokenService {
@@ -34,7 +36,6 @@ public class JwtTokenService {
             this.createPayload.put("userId", user.getId().toString());
             this.createPayload.put("email", user.getEmail());
             this.createPayload.put("role", user.getRole().toString());
-            this.createPayload.put("unitId", user.getUnit().getId().toString());
             this.createPayload.put("ip", ip);
             this.createPayload.put("userAgent", userAgent);
 
@@ -46,7 +47,7 @@ public class JwtTokenService {
                     .withExpiresAt(this.generateExpirationDateMinutes())
                     .sign(algorithm);
         } catch (JWTCreationException ex) {
-            throw new SecurityException();
+            throw new SecurityException("Error ao criar JWT de Login!");
         }
     }
 
@@ -65,23 +66,18 @@ public class JwtTokenService {
             );
 
             if (!this.validatePayload.get("ip").asString().equals(ip)) {
-                // Log error
-
+                log.warn("IP: {} \n User agent: {}, \n Tentando utilizar Jwt gerado por outro usuário", ip, userAgent);
                 throw new SecurityException("Ip de requisição diferente do token");
             }
 
             if (!this.validatePayload.get("userAgent").asString().equals(userAgent)) {
-                // Log error
-
+                log.warn("IP: {} \n User agent: {}, \n Tentando utilizar Jwt gerado por outro usuário", ip, userAgent);
                 throw new SecurityException("User Agent de requisição diferente do token");
             }
 
             return this.validatePayload;
         } catch (JWTVerificationException exception) {
-            // Log error
-
-            exception.printStackTrace();
-            throw new SecurityException("Error in JWT validation");
+            throw new SecurityException("Erro na Validação do token JWT");
         }
     }
 
@@ -104,11 +100,11 @@ public class JwtTokenService {
                     .withExpiresAt(generateExpirationDateMinutes())
                     .sign(algorithm);
         } catch (JWTCreationException ex) {
-            throw new SecurityException("Error creating password reset token");
+            throw new SecurityException("Error ao criar JWT para Alterar senha!");
         }
     }
 
     private Instant generateExpirationDateMinutes() {
-        return LocalDateTime.now().plusMinutes(15).toInstant(ZoneOffset.of("-03:00"));
+        return LocalDateTime.now().plusMinutes((15)).toInstant(ZoneOffset.of("-03:00"));
     }
 }

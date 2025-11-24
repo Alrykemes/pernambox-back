@@ -38,10 +38,20 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // NOAUTH
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/logout").permitAll()
                         .requestMatchers(HttpMethod.GET, "/auth/refresh-token").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/password-reset").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/password-reset/validate-otp").permitAll()
+                        // prometheus
+                        .requestMatchers(HttpMethod.GET, "/actuator/prometheus").permitAll()
                         .requestMatchers(HttpMethod.GET, SWAGGER_WHITELIST).permitAll()
+                        // AUTH ADMIN_MASTER
+                        .requestMatchers(HttpMethod.POST, "/unit/create").hasAuthority("ADMIN_MASTER")
+                        .requestMatchers(HttpMethod.DELETE, "/unit/delete").hasAuthority("ADMIN_MASTER")
+                        .requestMatchers(HttpMethod.PUT, "/unit/update").hasAuthority("ADMIN_MASTER")
+                        // AUTH ADMIN/ADMIN_MASTER
+                        .requestMatchers(HttpMethod.POST, "/user/create").hasAnyAuthority("ADMIN_MASTER", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/user/admin/update").hasAnyAuthority("ADMIN_MASTER", "ADMIN")
                         // AUTH
                         .anyRequest().authenticated()
                 )
