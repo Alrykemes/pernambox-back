@@ -124,20 +124,20 @@ CREATE TABLE resource_product
         REFERENCES resource (ID) ON DELETE CASCADE
 );
 
-CREATE TYPE operation_type AS ENUM ('CREATE','UPDATE','DELETE');
-CREATE TYPE operation_target AS ENUM ('UNIT','USER','PRODUCT','RESOURCE','RESOURCE_PRODUCT','ORIGIN', 'DESTINATION');
+CREATE TYPE log_history_type AS ENUM ('CREATE','UPDATE','DELETE');
+CREATE TYPE log_history_target AS ENUM ('UNIT','USER','PRODUCT','RESOURCE','RESOURCE_PRODUCT','ORIGIN', 'DESTINATION');
 
-CREATE TABLE operation
+CREATE TABLE log_history
 (
     id               SERIAL PRIMARY KEY,
-    operation_type   operation_type   NOT NULL,
-    operation_date   TIMESTAMP        NOT NULL,
-    operation_target operation_target NOT NULL,
+    log_history_type   log_history_type   NOT NULL,
+    log_history_date   TIMESTAMP        NOT NULL,
+    log_history_target log_history_target NOT NULL,
     description      VARCHAR(255)     NOT NULL,
     target_id        UUID             NOT NULL,
     unit_id          UUID,
     users_id         UUID             NOT NULL,
-    CONSTRAINT fk_operation_users_id FOREIGN KEY (users_id)
+    CONSTRAINT fk_log_history_users_id FOREIGN KEY (users_id)
         REFERENCES users (id) ON DELETE CASCADE
 );
 

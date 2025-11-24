@@ -29,8 +29,8 @@ public class FileController {
         List<String> fileNames = new ArrayList<>();
         files.forEach(file -> {
             try {
-                minioService.uploadFile(file.getOriginalFilename(), file.getInputStream(), file.getContentType());
-                fileNames.add(file.getOriginalFilename());
+                String fileName = minioService.uploadFile(file.getOriginalFilename(), file.getInputStream(), file.getContentType());
+                fileNames.add(fileName);
             } catch (Exception e) {
                 throw new UploadFilesException("Erro ao fazer upload do arquivo " + file.getOriginalFilename());
             }

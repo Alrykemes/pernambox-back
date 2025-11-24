@@ -1,15 +1,15 @@
 package com.dev.pernambox.controller;
 
-import com.dev.pernambox.domain.operation.dtos.OperationWithoutUnitDto;
-import com.dev.pernambox.domain.operation.enums.OperationTarget;
-import com.dev.pernambox.domain.operation.enums.OperationType;
+import com.dev.pernambox.domain.loghistory.dtos.LogHistoryWithoutUnitDto;
+import com.dev.pernambox.domain.loghistory.enums.LogHistoryTarget;
+import com.dev.pernambox.domain.loghistory.enums.LogHistoryType;
 import com.dev.pernambox.domain.user.User;
 import com.dev.pernambox.domain.user.dtos.*;
 import com.dev.pernambox.domain.user.enums.Role;
 import com.dev.pernambox.exceptions.AuthorizationException;
 import com.dev.pernambox.exceptions.DeleteEntityException;
 import com.dev.pernambox.service.EmailService;
-import com.dev.pernambox.service.OperationService;
+import com.dev.pernambox.service.LogHistoryService;
 import com.dev.pernambox.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,7 +34,7 @@ public class UserController {
 
     private final UserService userService;
     private final EmailService emailService;
-    private final OperationService operationService;
+    private final LogHistoryService logHistoryService;
 
     @PostMapping("/create")
     @Operation(summary = "Cria usuário", description = "Um usuário admin cria um acesso para outro usuário, novo usuário recebe email de boas vindas e instruções de primeiro acesso.")
@@ -45,16 +45,16 @@ public class UserController {
             throw new AuthorizationException("Você não tem Autorização para criar usuários!");
         }
 
-        if (body.role().equals(Role.ADMIN) && !user.getRole().equals(Role.ADMIN)) {
+        if (body.role().equals(Role.ADMIN) && !user.getRole().equals(Role.ADMIN_MASTER)) {
             throw new AuthorizationException("Apenas Master Admins podem criar outros Admins!");
         }
 
         User newUser = userService.save(body);
 
-        operationService.createOperation(new OperationWithoutUnitDto(
-                OperationType.CREATE,
-                OperationTarget.USER,
-                this.getDescriptionOperation(OperationType.CREATE, user, newUser),
+        logHistoryService.createLogHistory(new LogHistoryWithoutUnitDto(
+                LogHistoryType.CREATE,
+                LogHistoryTarget.USER,
+                this.getDescriptionOperation(LogHistoryType.CREATE, user, newUser),
                 newUser.getId(),
                 user.getId()
         ));
@@ -81,10 +81,10 @@ public class UserController {
 
         User userDeleted = userService.deleteUser(userId);
 
-        operationService.createOperation(new OperationWithoutUnitDto(
-                OperationType.DELETE,
-                OperationTarget.USER,
-                this.getDescriptionOperation(OperationType.DELETE, user, userDeleted),
+        logHistoryService.createLogHistory(new LogHistoryWithoutUnitDto(
+                LogHistoryType.DELETE,
+                LogHistoryTarget.USER,
+                this.getDescriptionOperation(LogHistoryType.DELETE, user, userDeleted),
                 userDeleted.getId(),
                 user.getId()
         ));
@@ -128,7 +128,7 @@ public class UserController {
                 new PageUserResponseDto(
                         userService.getUserByName(
                                 name,
-                                page - 1,
+                                (page - 1),
                                 size,
                                 active,
                                 noActive,
@@ -142,9 +142,9 @@ public class UserController {
     @GetMapping("/all")
     @Operation(summary = "Retorna todos usuários de forma paginada, com possibilidade de inserir filtros")
     public ResponseEntity<PageUserResponseDto> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(new PageUserResponseDto(userService.getAllUsers(page, size)));
+        return ResponseEntity.ok(new PageUserResponseDto(userService.getAllUsers((page - 1), size)));
     }
 
 
@@ -157,10 +157,10 @@ public class UserController {
             throw new AuthorizationException("Não é possível alterar outro usuário por esta rota!");
         }
 
-        operationService.createOperation(new OperationWithoutUnitDto(
-                OperationType.UPDATE,
-                OperationTarget.USER,
-                this.getDescriptionOperation(OperationType.UPDATE, user, user),
+        logHistoryService.createLogHistory(new LogHistoryWithoutUnitDto(
+                LogHistoryType.UPDATE,
+                LogHistoryTarget.USER,
+                this.getDescriptionOperation(LogHistoryType.UPDATE, user, user),
                 user.getId(),
                 user.getId()
         ));
@@ -181,10 +181,10 @@ public class UserController {
 
         User userUpdated = userService.update(body, user);
 
-        operationService.createOperation(new OperationWithoutUnitDto(
-                OperationType.UPDATE,
-                OperationTarget.USER,
-                this.getDescriptionOperation(OperationType.UPDATE, user, userUpdated),
+        logHistoryService.createLogHistory(new LogHistoryWithoutUnitDto(
+                LogHistoryType.UPDATE,
+                LogHistoryTarget.USER,
+                this.getDescriptionOperation(LogHistoryType.UPDATE, user, userUpdated),
                 userUpdated.getId(),
                 user.getId()
         ));
@@ -192,14 +192,14 @@ public class UserController {
         return ResponseEntity.ok(new UserResponseDto(userUpdated));
     }
 
-    private String getDescriptionOperation(OperationType type, User userResponsible, User userAffected) {
-        return type.equals(OperationType.CREATE) ?
+    private String getDescriptionOperation(LogHistoryType type, User userResponsible, User userAffected) {
+        return type.equals(LogHistoryType.CREATE) ?
                 "O usuário " + userResponsible.getName() + " de id " + userResponsible.getId().toString()
                         + " Criou o usuario " + userAffected.getName() + " de id " + userAffected.getId().toString()
-                : type.equals(OperationType.UPDATE) ?
+                : type.equals(LogHistoryType.UPDATE) ?
                 "O usuário " + userResponsible.getName() + " de id " + userResponsible.getId().toString()
                         + " Atualizou o usuario " + userAffected.getName() + " de id " + userAffected.getId().toString()
-                : type.equals(OperationType.DELETE) ?
+                : type.equals(LogHistoryType.DELETE) ?
                 "O usuário " + userResponsible.getName() + " de id " + userResponsible.getId().toString()
                         + " Deletou o usuario " + userAffected.getName() + " de id " + userAffected.getId().toString()
                 : "Tipo de Operação Inválido";

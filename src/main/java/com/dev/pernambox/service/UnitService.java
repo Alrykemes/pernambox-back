@@ -2,9 +2,6 @@ package com.dev.pernambox.service;
 
 import com.dev.pernambox.domain.address.Address;
 import com.dev.pernambox.domain.address.dtos.AddressRequestDto;
-import com.dev.pernambox.domain.operation.dtos.OperationWithoutUnitDto;
-import com.dev.pernambox.domain.operation.enums.OperationTarget;
-import com.dev.pernambox.domain.operation.enums.OperationType;
 import com.dev.pernambox.domain.unit.Unit;
 import com.dev.pernambox.domain.unit.dtos.*;
 import com.dev.pernambox.domain.user.User;
@@ -15,7 +12,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,7 +20,7 @@ import java.util.UUID;
 public class UnitService {
     private final UnitRepository unitRepository;
     private final UserRepository userRepository;
-    private final OperationService operationService;
+    private final LogHistoryService logHistoryService;
 
     public List<Unit> findAll() {
         return unitRepository.findAll();
@@ -45,17 +41,6 @@ public class UnitService {
         unit.setEmail(unitDto.email());
         unit.setActive(true);
         unit.setAddress(address);
-
-        String descriptionOp = "O usuário " + userResponsible.getName() + " de id " + userResponsible.getId().toString()
-                + " Criou a unidade " + unit.getName() + " de id " + unit.getId().toString();
-
-        operationService.createOperation(new OperationWithoutUnitDto(
-                OperationType.CREATE,
-                OperationTarget.UNIT,
-                descriptionOp,
-                unit.getId(),
-                userResponsible.getId()
-        ));
 
         return unitRepository.save(unit);
     }

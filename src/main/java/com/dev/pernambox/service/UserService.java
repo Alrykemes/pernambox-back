@@ -1,8 +1,5 @@
 package com.dev.pernambox.service;
 
-import com.dev.pernambox.domain.operation.dtos.OperationWithoutUnitDto;
-import com.dev.pernambox.domain.operation.enums.OperationTarget;
-import com.dev.pernambox.domain.operation.enums.OperationType;
 import com.dev.pernambox.domain.user.User;
 import com.dev.pernambox.domain.user.dtos.UserRequestDto;
 import com.dev.pernambox.domain.user.dtos.StatsUsersResponseDto;
@@ -26,16 +23,15 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final OperationService operationService;
 
     public User save(UserRequestDto userRequestDto) {
-        if(this.userRepository.existsByCpfEquals(userRequestDto.cpf())) {
+        if (this.userRepository.existsByCpfEquals(userRequestDto.cpf())) {
             throw new CreateEntityException("Já existe um cadastro com este CPF!");
         }
-        if(this.userRepository.existsByPhoneEquals(userRequestDto.phone())) {
+        if (this.userRepository.existsByPhoneEquals(userRequestDto.phone())) {
             throw new CreateEntityException("Já existe um cadastro com este Telefone!");
         }
-        if(this.userRepository.existsByEmailEquals(userRequestDto.email())) {
+        if (this.userRepository.existsByEmailEquals(userRequestDto.email())) {
             throw new CreateEntityException("Já existe um cadastro com este Email!");
         }
 //        if(CpfUtils.isValidCPF(userRequestDto.cpf())) {
@@ -66,7 +62,9 @@ public class UserService {
 
     public Page<User> getUserByName(String name, int page, int size, boolean active,
                                     boolean deactive, boolean onlyAdmins, boolean onlyUsers) {
+        System.out.println(page);
         Pageable pageable = PageRequest.of(page, size);
+
         return this.userRepository.getUsersByNameWithFilter(name, active, deactive, onlyUsers, onlyAdmins, pageable);
     }
 
@@ -88,9 +86,14 @@ public class UserService {
             if (!passwordEncoder.matches(updateDto.password(), user.getPassword())) {
                 throw new AuthorizationException("Senha Incorreta!");
             }
-            if (updateDto.newPassword().equals(updateDto.password())) {
-                throw new UpdateEntityException("A nova senha não pode ser ingual a antiga!");
+            if (updateDto.newPassword() != null) {
+                if (updateDto.newPassword().equals(updateDto.password())) {
+                    throw new UpdateEntityException("A nova senha não pode ser igual a antiga!");
+                }
             }
+        }
+        if (responsibleUser.getRole().equals(Role.ADMIN) && user.getRole().equals(Role.ADMIN_MASTER)) {
+            throw new AuthorizationException("Você não tem permissão para alterar um Administrador Geral!");
         }
 
         setUpdateValues(updateDto, user);
@@ -116,13 +119,13 @@ public class UserService {
     }
 
     private void setUpdateValues(UserUpdateDto updateDto, User user) {
-        if(updateDto.email() != null && this.userRepository.existsByEmailAndIdNot(updateDto.email(), updateDto.userId())) {
+        if (updateDto.email() != null && this.userRepository.existsByEmailAndIdNot(updateDto.email(), updateDto.userId())) {
             throw new UpdateEntityException("Já existe um cadastro com este Email!");
         }
-        if(updateDto.phone() != null && this.userRepository.existsByPhoneAndIdNot(updateDto.phone(), updateDto.userId())) {
+        if (updateDto.phone() != null && this.userRepository.existsByPhoneAndIdNot(updateDto.phone(), updateDto.userId())) {
             throw new UpdateEntityException("Já existe um cadastro com este Telefone!");
         }
-        if(updateDto.cpf() != null && this.userRepository.existsByCpfAndIdNot(updateDto.cpf(), updateDto.userId())) {
+        if (updateDto.cpf() != null && this.userRepository.existsByCpfAndIdNot(updateDto.cpf(), updateDto.userId())) {
             throw new UpdateEntityException("Já existe um cadastro com este CPF!");
         }
 //        else if(CpfUtils.isValidCPF(updateDto.cpf())) {

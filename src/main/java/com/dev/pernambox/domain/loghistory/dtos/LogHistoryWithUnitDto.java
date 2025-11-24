@@ -1,22 +1,21 @@
-package com.dev.pernambox.domain.operation.dtos;
+package com.dev.pernambox.domain.loghistory.dtos;
 
-import com.dev.pernambox.domain.operation.enums.OperationTarget;
-import com.dev.pernambox.domain.operation.enums.OperationType;
+import com.dev.pernambox.domain.loghistory.enums.LogHistoryTarget;
+import com.dev.pernambox.domain.loghistory.enums.LogHistoryType;
 import jakarta.validation.constraints.NotBlank;
-import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record OperationWithoutUnitDto(
+public record LogHistoryWithUnitDto(
         @NotBlank(message = "operationType é necessário")
-        OperationType operationType,
+        LogHistoryType logHistoryType,
         @NotBlank(message = "operationTarget é necessário")
-        OperationTarget operationTarget,
+        LogHistoryTarget logHistoryTarget,
         @NotBlank(message = "description é necessário")
         String description,
         @NotBlank(message = "targetId é necessário")
         UUID targetId,
+        UUID unitId,
         @NotBlank(message = "userId é necessário")
         UUID userId
 ) {

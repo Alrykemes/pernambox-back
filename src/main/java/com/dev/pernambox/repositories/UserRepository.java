@@ -2,7 +2,7 @@ package com.dev.pernambox.repositories;
 
 import com.dev.pernambox.domain.user.User;
 import com.dev.pernambox.domain.user.dtos.StatsUsersResponseDto;
-import com.dev.pernambox.domain.user.enums.Role;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,6 +18,8 @@ import java.util.UUID;
 public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByEmail(String email);
+
+    Optional<User> findById(UUID id);
 
     @Modifying
     @Transactional
