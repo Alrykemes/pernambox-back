@@ -50,7 +50,7 @@ CREATE TABLE unit
 
 CREATE TYPE status_type AS ENUM ('STABLE','UNSTABLE','CRITICAL');
 
-CREATE TYPE categories_resources AS ENUM ('HYGIENIC','HEALTH','FOOD','OTHERS');
+CREATE TYPE categories_resources AS ENUM ('HYGIENIC','HEALTH','FOOD','SHELTER','CLOTHING','OTHERS');
 
 CREATE TABLE resource
 (
@@ -58,7 +58,6 @@ CREATE TABLE resource
     description VARCHAR(255)         NOT NULL,
     status      status_type          NOT NULL,
     quantity    BIGINT               NOT NULL,
-    validity    DATE                 NOT NULL,
     category    categories_resources NOT NULL DEFAULT 'OTHERS',
     unit_id     UUID                 NOT NULL,
     qrcode      VARCHAR(255)         NOT NULL,
@@ -66,13 +65,53 @@ CREATE TABLE resource
         REFERENCES unit (id) ON DELETE CASCADE
 );
 
-CREATE TABLE product
+CREATE TABLE ref_product
 (
     id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    validity    DATE         NOT NULL,
-    quantity    BIGINT       NOT NULL,
     gtin        VARCHAR(14)  NOT NULL,
-    description VARCHAR(255) NOT NULL
+    description VARCHAR(255) NOT NULL,
+    avg_price   FLOAT        NOT NULL,
+    brand       VARCHAR(255) NOT NULL,
+    image       VARCHAR(255) NOT NULL
+);
+
+CREATE TYPE document_type AS ENUM ('CPF','CNPJ');
+CREATE TYPE origin_type AS ENUM ('DONATION', 'BUY','OTHERS');
+
+CREATE TABLE origin
+(
+    id              SERIAL PRIMARY KEY,
+    cpf_cnpj_origin VARCHAR(14)   NOT NULL,
+    document        document_type NOT NULL,
+    date            DATE          NOT NULL,
+    origin          origin_type   NOT NULL,
+    SEI_process     VARCHAR(255),
+    unit_id         UUID          NOT NULL,
+    CONSTRAINT fk_origin_unit_id FOREIGN KEY (unit_id)
+        REFERENCES unit (id) ON DELETE CASCADE
+);
+
+CREATE TABLE document_origin
+(
+    id        SERIAL PRIMARY KEY,
+    name      VARCHAR(255) NOT NULL,
+    image     VARCHAR(255) NOT NULL,
+    origin_id INTEGER      NOT NULL,
+    CONSTRAINT fk_document_origin_origin_id FOREIGN KEY (origin_id)
+        REFERENCES origin (id) ON DELETE CASCADE
+);
+
+CREATE TABLE product
+(
+    id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    validity       DATE    NOT NULL,
+    quantity       BIGINT  NOT NULL,
+    ref_product_id UUID    NOT NULL,
+    origin_id      INTEGER NOT NULL,
+    CONSTRAINT fk_ref_product_id FOREIGN KEY (ref_product_id)
+        REFERENCES ref_product (id) ON DELETE CASCADE,
+    CONSTRAINT fk_product_origin_id FOREIGN KEY (origin_id)
+        REFERENCES origin (id) ON DELETE CASCADE
 );
 
 CREATE TABLE resource_product
@@ -85,40 +124,21 @@ CREATE TABLE resource_product
         REFERENCES resource (ID) ON DELETE CASCADE
 );
 
-CREATE TYPE operation_type AS ENUM ('CREATE','UPDATE','DELETE');
-CREATE TYPE operation_target AS ENUM ('UNIT','USER','PRODUCT','RESOURCE','RESOURCE_PRODUCT','ORIGIN', 'DESTINATION');
+CREATE TYPE log_history_type AS ENUM ('CREATE','UPDATE','DELETE');
+CREATE TYPE log_history_target AS ENUM ('UNIT','USER','PRODUCT','RESOURCE','RESOURCE_PRODUCT','ORIGIN', 'DESTINATION');
 
-CREATE TABLE operation
+CREATE TABLE log_history
 (
     id               SERIAL PRIMARY KEY,
-    operation_type   operation_type   NOT NULL,
-    operation_date   TIMESTAMP        NOT NULL,
-    operation_target operation_target NOT NULL,
+    log_history_type   log_history_type   NOT NULL,
+    log_history_date   TIMESTAMP        NOT NULL,
+    log_history_target log_history_target NOT NULL,
     description      VARCHAR(255)     NOT NULL,
     target_id        UUID             NOT NULL,
-    unit_id          UUID             NOT NULL,
+    unit_id          UUID,
     users_id         UUID             NOT NULL,
-    CONSTRAINT fk_operation_unit_id FOREIGN KEY (unit_id)
-        REFERENCES unit (id) ON DELETE CASCADE,
-    CONSTRAINT fk_operation_users_id FOREIGN KEY (users_id)
+    CONSTRAINT fk_log_history_users_id FOREIGN KEY (users_id)
         REFERENCES users (id) ON DELETE CASCADE
-);
-
-CREATE TYPE document_type AS ENUM ('CPF','CNPJ');
-CREATE TYPE origin_type AS ENUM ('PRODUCT', 'RESOURCE');
-
-CREATE TABLE origin
-(
-    id              SERIAL PRIMARY KEY,
-    receipt         VARCHAR(255)  NOT NULL,
-    cpf_cnpj_origin VARCHAR(14)   NOT NULL,
-    document        document_type NOT NULL,
-    date            DATE          NOT NULL,
-    origin          origin_type   NOT NULL,
-    target_id       UUID          NOT NULL,
-    SEI_process     INTEGER,
-    "order"         VARCHAR(255),
-    documents_name  VARCHAR(255)  NOT NULL
 );
 
 CREATE TABLE refresh_token

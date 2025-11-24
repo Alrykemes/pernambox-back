@@ -9,7 +9,6 @@ import com.dev.pernambox.exceptions.NotFoundException;
 import com.dev.pernambox.repositories.UnitRepository;
 import com.dev.pernambox.repositories.UserRepository;
 import lombok.AllArgsConstructor;
-import org.checkerframework.checker.units.qual.N;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,12 +20,13 @@ import java.util.UUID;
 public class UnitService {
     private final UnitRepository unitRepository;
     private final UserRepository userRepository;
+    private final LogHistoryService logHistoryService;
 
     public List<Unit> findAll() {
         return unitRepository.findAll();
     }
 
-    public Unit saveUnit(UnitCreateRequestDto unitDto) {
+    public Unit saveUnit(UnitCreateRequestDto unitDto, User userResponsible) {
         AddressRequestDto newAddress = unitDto.address();
         Address address = new Address(newAddress);
 
@@ -76,13 +76,15 @@ public class UnitService {
             address.setComplement(a.complement());
 
         }
+
         return unitRepository.save(unit);
     }
 
     @Transactional
-    public void deleteUnit(UUID id) {
+    public Unit deleteUnit(UUID id) {
         Unit unit = unitRepository.findById(id).orElseThrow(() -> new NotFoundException("Unidade não encontrada para ser deletada"));
         unitRepository.delete(unit);
+        return unit;
     }
 
     public UnitStatsResponseDto getUnitStats() {

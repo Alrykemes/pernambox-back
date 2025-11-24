@@ -1,6 +1,6 @@
-package com.dev.pernambox.domain.operation.enums;
+package com.dev.pernambox.domain.loghistory.enums;
 
-public enum OperationTarget {
+public enum LogHistoryTarget {
     UNIT,
     USER,
     PRODUCT,

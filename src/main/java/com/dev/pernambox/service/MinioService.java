@@ -29,19 +29,16 @@ public class MinioService {
                 .build();
         this.bucket = bucket;
 
-        inicializarBucket();
+        bucketInitialize();
     }
 
-    /**
-     * Cria o bucket se ele não existir
-     */
-    private void inicializarBucket() throws MinioException {
+    private void bucketInitialize() throws MinioException {
         try {
-            boolean existe = minioClient.bucketExists(
+            boolean exists = minioClient.bucketExists(
                     BucketExistsArgs.builder().bucket(bucket).build()
             );
 
-            if (!existe) {
+            if (!exists) {
                 minioClient.makeBucket(
                         MakeBucketArgs.builder().bucket(bucket).build()
                 );
@@ -77,31 +74,60 @@ public class MinioService {
         }
     }
 
-    /**
-     * Upload de arquivo
-     */
-    public void uploadFile(String nomeArquivo, InputStream conteudo, String contentType) throws Exception {
+    public String uploadFile(String fileName, InputStream content, String contentType) throws Exception {
+        String uniqueFileName = getUniqueFileName(minioClient, bucket, fileName);
+
         minioClient.putObject(
                 PutObjectArgs.builder()
                         .bucket(bucket)
-                        .object(nomeArquivo)
-                        .stream(conteudo, -1, 10485760)
+                        .object(uniqueFileName)
+                        .stream(content, -1, 10485760)
                         .contentType(contentType)
                         .build()
         );
+
+        return uniqueFileName;
     }
 
-    /**
-     * Gera URL temporária (válida apenas dentro da rede Docker)
-     */
-    public String gerarUrlTemporaria(String nomeArquivo, int duracaoSegundos) throws Exception {
+    public String gerarUrlTemporaria(String fileName, int duration) throws Exception {
         return minioClient.getPresignedObjectUrl(
                 GetPresignedObjectUrlArgs.builder()
                         .method(Method.GET)
                         .bucket(bucket)
-                        .object(nomeArquivo)
-                        .expiry(duracaoSegundos, TimeUnit.SECONDS)
+                        .object(fileName)
+                        .expiry(duration, TimeUnit.SECONDS)
                         .build()
         );
+    }
+
+    private String getUniqueFileName(MinioClient minioClient, String bucket, String fileName) {
+        String currentName = fileName;
+        String withoutExtesion = fileName;
+        String extension = "";
+
+        int point = fileName.lastIndexOf(".");
+        if (point != -1) {
+            withoutExtesion = fileName.substring(0, point);
+            extension = fileName.substring(point);
+        }
+
+        int i = 1;
+
+        while (true) {
+            try {
+                minioClient.statObject(
+                        StatObjectArgs.builder()
+                                .bucket(bucket)
+                                .object(currentName)
+                                .build()
+                );
+
+                currentName = withoutExtesion + " (" + i + ")" + extension;
+                i++;
+
+            } catch (Exception e) {
+                return currentName;
+            }
+        }
     }
 }
