@@ -1,5 +1,7 @@
 package com.dev.pernambox.domain.product;
 
+import com.dev.pernambox.domain.origin.Origin;
+import com.dev.pernambox.domain.product.dtos.ProductRequestDto;
 import com.dev.pernambox.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -28,10 +30,18 @@ public class Product {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    @Column(name = "gtin", nullable = false, unique = true)
-    private String gtin;
+    @JoinColumn(name = "ref_product_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private RefProduct ref_product_id;
 
-    @Column(name = "description", nullable = false)
-    private String description;
+    @JoinColumn(name = "origin_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Origin origin_id;
 
+    public Product (ProductRequestDto dto){
+        this.validity = dto.validity();
+        this.quantity = dto.quantity();
+        this.ref_product_id = dto.ref_product_id();
+        this.origin_id = dto.origin_id();
+    }
 }

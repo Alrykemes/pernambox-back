@@ -13,11 +13,11 @@ public record OriginRequestDto(
         @NotBlank(message = "O cpf ou cnpj é necessário")
         @Size(min = 11,max = 14, message = "O cpf ou cnpj deve ter entre 11 a 14 caracteres")
         String cpf_cnpj_origin,
-        @NotBlank(message = "O tipo do documento é necessário")
+        @NotNull(message = "O tipo do documento é necessário")
         DocumentType document,
         @NotNull(message = "A data é necessária")
         LocalDateTime date,
-        @NotBlank(message = "O tipo da origem é necessário")
+        @NotNull(message = "O tipo da origem é necessário")
         OriginType origin,
         Integer SEI_process
         ){}

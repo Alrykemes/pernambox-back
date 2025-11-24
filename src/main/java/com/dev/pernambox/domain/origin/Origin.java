@@ -26,14 +26,14 @@ public class Origin {
     private String cpf_cnpj_origin;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "document_type", columnDefinition = "document_type", nullable = false)
+    @Column(name = "document", columnDefinition = "document_type", nullable = false)
     private DocumentType document;
 
     @Column(name = "date", nullable = false, updatable = false)
     private LocalDateTime date;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "origin_type", columnDefinition = "origin_type", nullable = false)
+    @Column(name = "origin", columnDefinition = "origin_type", nullable = false)
     private OriginType origin;
 
     @Column(name = "SEI_process")
