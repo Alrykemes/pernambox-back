@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @AllArgsConstructor
 @Service
@@ -77,5 +78,14 @@ public class RefProductService {
                 .stream()
                 .map(RefProductResponseDto::new)
                 .toList();
+    }
+
+    public RefProductResponseDto findByGtin(String refProductGtin){
+        try {
+            RefProduct refProduct = refProductRepository.findByGtin(refProductGtin).orElseThrow(()-> new NotFoundException("Ref product not found"));
+            return new RefProductResponseDto(refProduct);
+        } catch (NotFoundException e) {
+            return new RefProductResponseDto();
+        }
     }
 }

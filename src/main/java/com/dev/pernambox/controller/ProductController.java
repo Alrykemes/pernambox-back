@@ -6,6 +6,7 @@ import com.dev.pernambox.service.RefProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -30,6 +31,10 @@ public class ProductController {
     @GetMapping("/refProduct")
     @Operation(summary = "Lista produtos base", description = "Faz a listagem de todos os produtos base")
     public ResponseEntity<List<RefProductResponseDto>> findAllRefProducts() { return ResponseEntity.ok(refProductService.findAll()); }
+
+    @GetMapping("/{gtin}")
+    @Operation(summary = "Produto base por Gtin", description = "Busca produto base pelo Gtin ( Código de barras )")
+    public ResponseEntity<RefProductResponseDto> findByGtin(@Valid @Size(min = 14, max = 14, message = "O gtin deve possuir 14 caracteres") @PathVariable String gtin){ return ResponseEntity.ok(refProductService.findByGtin(gtin)); }
 
     @PostMapping()
     @Operation(summary = "Adiciona produto", description = "Adiciona um produto novo")

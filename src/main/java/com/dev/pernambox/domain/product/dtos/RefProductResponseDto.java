@@ -15,4 +15,8 @@ public record RefProductResponseDto(
     public RefProductResponseDto(RefProduct refProduct){
         this(refProduct.getId(),refProduct.getGtin(),refProduct.getDescription(),refProduct.getAvg_price(),refProduct.getBrand(),refProduct.getImage());
     }
+
+    public RefProductResponseDto(){
+        this(null,null,null,null,null,null);
+    }
 }
