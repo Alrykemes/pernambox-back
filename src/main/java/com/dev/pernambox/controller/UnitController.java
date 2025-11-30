@@ -1,15 +1,25 @@
 package com.dev.pernambox.controller;
 
+import com.dev.pernambox.domain.loghistory.dtos.LogHistoryWithoutUnitDto;
+import com.dev.pernambox.domain.loghistory.enums.LogHistoryTarget;
+import com.dev.pernambox.domain.loghistory.enums.LogHistoryType;
 import com.dev.pernambox.domain.unit.Unit;
 import com.dev.pernambox.domain.unit.dtos.UnitCreateRequestDto;
 import com.dev.pernambox.domain.unit.dtos.UnitStatsResponseDto;
 import com.dev.pernambox.domain.unit.dtos.UnitUpdateRequestDto;
+import com.dev.pernambox.domain.user.User;
+import com.dev.pernambox.domain.user.enums.Role;
+import com.dev.pernambox.exceptions.CreateEntityException;
+import com.dev.pernambox.exceptions.DeleteEntityException;
+import com.dev.pernambox.exceptions.UpdateEntityException;
+import com.dev.pernambox.service.LogHistoryService;
 import com.dev.pernambox.service.UnitService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -25,6 +35,7 @@ import java.util.UUID;
 @Tag(name = "Unit", description = "rotas para controle de unidade")
 public class UnitController {
     private final UnitService unitService;
+    private final LogHistoryService logHistoryService;
 
     @GetMapping()
     @Operation(summary = "Lista todas unidades", description = "Faz a listagem de todas as unidades cadastradas")
@@ -32,21 +43,69 @@ public class UnitController {
         return ResponseEntity.ok(unitService.findAll());
     }
 
-    @PostMapping()
+    @PostMapping("/create")
     @Operation(summary = "Adiciona unidade", description = "Faz a inserção de uma unidade")
-    public ResponseEntity<Unit> saveUnit(@Valid @RequestBody UnitCreateRequestDto unitDto, UriComponentsBuilder uriComponentsBuilder) {
-        Unit newUnit = unitService.saveUnit(unitDto);
+    public ResponseEntity<Unit> saveUnit(@Valid @RequestBody UnitCreateRequestDto unitDto, UriComponentsBuilder uriComponentsBuilder, Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        if(user.getRole().equals(Role.USER) || user.getRole().equals(Role.ADMIN)) {
+            throw new CreateEntityException("Você não tem permissão para criar unidades");
+        }
+        Unit newUnit = unitService.saveUnit(unitDto, user);
+
+        logHistoryService.createLogHistory(new LogHistoryWithoutUnitDto(
+                LogHistoryType.CREATE,
+                LogHistoryTarget.UNIT,
+                this.getDescriptionOperation(LogHistoryType.CREATE, user, newUnit),
+                newUnit.getId(),
+                user.getId()
+        ));
+
         URI uri = uriComponentsBuilder.path("/user/info/{id}").buildAndExpand(newUnit.getId()).toUri();
         return ResponseEntity.created(uri).body(newUnit);
     }
 
-    @PatchMapping("/{unitId}")
+    @PatchMapping("/update/{unitId}")
     @Operation(summary = "Atualiza unidade", description = "Faz a alteração da unidade desejada")
     public ResponseEntity<Unit> updateUnit(
             @PathVariable UUID unitId,
-            @Valid @RequestBody UnitUpdateRequestDto unitDto
-    ) {
-        return ResponseEntity.ok(unitService.updateUnit(unitId, unitDto));
+            @Valid @RequestBody UnitUpdateRequestDto unitDto,
+            Authentication authentication) {
+
+        User user = (User) authentication.getPrincipal();
+        if(user.getRole().equals(Role.USER) || user.getRole().equals(Role.ADMIN)) {
+            throw new UpdateEntityException("Você não tem permissão para Atualizar unidades");
+        }
+
+        Unit updatedUnit = unitService.updateUnit(unitId, unitDto);
+
+        logHistoryService.createLogHistory(new LogHistoryWithoutUnitDto(
+                LogHistoryType.UPDATE,
+                LogHistoryTarget.UNIT,
+                this.getDescriptionOperation(LogHistoryType.UPDATE, user, updatedUnit),
+                updatedUnit.getId(),
+                user.getId()
+        ));
+
+        return ResponseEntity.ok(updatedUnit);
+    }
+
+    @DeleteMapping("/delete/{unitId}")
+    @Operation(summary = "Deleta uma unidade", description = "Faz a deleção de uma unidade")
+    public void deleteUnit(@PathVariable UUID unitId, Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        if(user.getRole().equals(Role.USER) || user.getRole().equals(Role.ADMIN)) {
+            throw new DeleteEntityException("Você não tem permissão para deletar unidades");
+        }
+
+        Unit deletedUnit = unitService.deleteUnit(unitId);
+
+        logHistoryService.createLogHistory(new LogHistoryWithoutUnitDto(
+                LogHistoryType.DELETE,
+                LogHistoryTarget.UNIT,
+                this.getDescriptionOperation(LogHistoryType.DELETE, user, deletedUnit),
+                deletedUnit.getId(),
+                user.getId()
+        ));
     }
 
     @GetMapping("info/stats")
@@ -55,9 +114,16 @@ public class UnitController {
         return ResponseEntity.ok(unitService.getUnitStats());
     }
 
-    @DeleteMapping("/{unitId}")
-    @Operation(summary = "Deleta uma unidade", description = "Faz a deleção de uma unidade")
-    public void deleteUnit(@PathVariable UUID unitId) {
-        unitService.deleteUnit(unitId);
+    private String getDescriptionOperation(LogHistoryType type, User userResponsible, Unit unitAffected) {
+        return type.equals(LogHistoryType.CREATE) ?
+                "O usuário " + userResponsible.getName() + " de id " + userResponsible.getId().toString()
+                        + " Criou a unidade " + unitAffected.getName() + " de id " + unitAffected.getId().toString()
+                : type.equals(LogHistoryType.UPDATE) ?
+                "O usuário " + userResponsible.getName() + " de id " + userResponsible.getId().toString()
+                        + " Atualizou atualizou a unidade " + unitAffected.getName() + " de id " + unitAffected.getId().toString()
+                : type.equals(LogHistoryType.DELETE) ?
+                "O usuário " + userResponsible.getName() + " de id " + userResponsible.getId().toString()
+                        + " Deletou a unidade " + unitAffected.getName() + " de id " + unitAffected.getId().toString()
+                : "Tipo de Operação Inválido";
     }
 }

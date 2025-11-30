@@ -3,18 +3,19 @@ CREATE
 EXTENSION IF NOT EXISTS "uuid-ossp";
 
 
-CREATE TYPE role_type AS ENUM ('ADMIN','USER');
+CREATE TYPE role_type AS ENUM ('ADMIN_MASTER','ADMIN','USER');
 
 CREATE TABLE users
 (
-    id       UUID PRIMARY KEY      DEFAULT uuid_generate_v4(),
-    name     VARCHAR(255) NOT NULL,
-    cpf      CHAR(11)     NOT NULL UNIQUE,
-    email    VARCHAR(255) NOT NULL UNIQUE,
-    phone    VARCHAR(14) UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    active   BOOLEAN      NOT NULL,
-    role     role_type    NOT NULL DEFAULT 'USER'
+    id            UUID PRIMARY KEY      DEFAULT uuid_generate_v4(),
+    name          VARCHAR(255) NOT NULL,
+    cpf           CHAR(11)     NOT NULL UNIQUE,
+    email         VARCHAR(255) NOT NULL UNIQUE,
+    phone         VARCHAR(14) UNIQUE,
+    password      VARCHAR(255) NOT NULL,
+    active        BOOLEAN      NOT NULL,
+    image_profile VARCHAR(255) UNIQUE,
+    role          role_type    NOT NULL DEFAULT 'USER'
 );
 
 CREATE TABLE address_unit
@@ -37,7 +38,7 @@ CREATE TABLE unit
     phone          VARCHAR(11)  NOT NULL,
     email          VARCHAR(255) NOT NULL,
     responsible_id UUID         NOT NULL,
---     active BOOLEAN NOT NULL,
+    active         BOOLEAN      NOT NULL,
     created_at     TIMESTAMP    NOT NULL,
     description    VARCHAR(255),
     address_id     UUID         NOT NULL UNIQUE,
@@ -123,22 +124,20 @@ CREATE TABLE resource_product
         REFERENCES resource (ID) ON DELETE CASCADE
 );
 
-CREATE TYPE operation_type AS ENUM ('CREATE','UPDATE','DELETE');
-CREATE TYPE operation_target AS ENUM ('UNIT','USER','PRODUCT','RESOURCE','RESOURCE_PRODUCT','ORIGIN', 'DESTINATION');
+CREATE TYPE log_history_type AS ENUM ('CREATE','UPDATE','DELETE');
+CREATE TYPE log_history_target AS ENUM ('UNIT','USER','PRODUCT','RESOURCE','RESOURCE_PRODUCT','ORIGIN', 'DESTINATION');
 
-CREATE TABLE operation
+CREATE TABLE log_history
 (
     id               SERIAL PRIMARY KEY,
-    operation_type   operation_type   NOT NULL,
-    operation_date   TIMESTAMP        NOT NULL,
-    operation_target operation_target NOT NULL,
+    log_history_type   log_history_type   NOT NULL,
+    log_history_date   TIMESTAMP        NOT NULL,
+    log_history_target log_history_target NOT NULL,
     description      VARCHAR(255)     NOT NULL,
     target_id        UUID             NOT NULL,
-    unit_id          UUID             NOT NULL,
+    unit_id          UUID,
     users_id         UUID             NOT NULL,
-    CONSTRAINT fk_operation_unit_id FOREIGN KEY (unit_id)
-        REFERENCES unit (id) ON DELETE CASCADE,
-    CONSTRAINT fk_operation_users_id FOREIGN KEY (users_id)
+    CONSTRAINT fk_log_history_users_id FOREIGN KEY (users_id)
         REFERENCES users (id) ON DELETE CASCADE
 );
 

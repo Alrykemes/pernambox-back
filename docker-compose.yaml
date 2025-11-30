@@ -38,12 +38,13 @@ services:
     networks:
       - pernambox-net
     # Porta de acesso interna ("ports" em dev e "expose" em prod)
+    expose:
+      - "9000"
     ports:
       - "9100:9000"
+#     Acesso ao minio front (opcional)
       - "9101:9001"
-    # Se quiser acesso web (opcional, para setup)
-    # ports:
-    #   - "9001:9001"
+
   prometheus:
     image: prom/prometheus:v3.0.0
     container_name: prometheus
@@ -57,7 +58,9 @@ services:
       - pernambox-net
     security_opt:
       - no-new-privileges:true
-    read_only: true
+    ports:
+      - "9090:9090"
+    read_only: false
     restart: unless-stopped
 
   loki:
@@ -110,18 +113,18 @@ services:
       - loki
     networks:
       - pernambox-net
-#  backend:
-#    build: .
-#    container_name: backend
-#    ports:
-#      - "8080:8080"
-#    environment:
-#      - SPRING_PROFILES_ACTIVE=prod
-#    restart: unless-stopped
-#    env_file:
-#      - .env
-#    networks:
-#      - pernambox-net
+  backend:
+    build: .
+    container_name: backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - pernambox-net
 volumes:
   pernambox_pgdata:
   pernambox_redis_data:

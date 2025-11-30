@@ -3,16 +3,12 @@ package com.dev.pernambox.service;
 import com.dev.pernambox.domain.address.Address;
 import com.dev.pernambox.domain.address.dtos.AddressRequestDto;
 import com.dev.pernambox.domain.unit.Unit;
-import com.dev.pernambox.domain.unit.dtos.UnitCreateRequestDto;
-import com.dev.pernambox.domain.unit.dtos.UnitResponseDto;
-import com.dev.pernambox.domain.unit.dtos.UnitStatsResponseDto;
-import com.dev.pernambox.domain.unit.dtos.UnitUpdateRequestDto;
+import com.dev.pernambox.domain.unit.dtos.*;
 import com.dev.pernambox.domain.user.User;
 import com.dev.pernambox.exceptions.NotFoundException;
 import com.dev.pernambox.repositories.UnitRepository;
 import com.dev.pernambox.repositories.UserRepository;
 import lombok.AllArgsConstructor;
-import org.checkerframework.checker.units.qual.N;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,12 +20,13 @@ import java.util.UUID;
 public class UnitService {
     private final UnitRepository unitRepository;
     private final UserRepository userRepository;
+    private final LogHistoryService logHistoryService;
 
     public List<Unit> findAll() {
         return unitRepository.findAll();
     }
 
-    public Unit saveUnit(UnitCreateRequestDto unitDto) {
+    public Unit saveUnit(UnitCreateRequestDto unitDto, User userResponsible) {
         AddressRequestDto newAddress = unitDto.address();
         Address address = new Address(newAddress);
 
@@ -42,6 +39,7 @@ public class UnitService {
         unit.setResponsible(responsible);
         unit.setPhone(unitDto.phone());
         unit.setEmail(unitDto.email());
+        unit.setActive(true);
         unit.setAddress(address);
 
         return unitRepository.save(unit);
@@ -52,8 +50,8 @@ public class UnitService {
     }
 
     @Transactional
-    public Unit updateUnit(UUID id,  UnitUpdateRequestDto unitDto) {
-        Unit unit = unitRepository.findById(id).orElseThrow(() -> new NotFoundException("Unidade não encontrada"));
+    public Unit updateUnit(UUID id, UnitUpdateRequestDto unitDto) {
+        Unit unit = unitRepository.findById(id).orElseThrow(() -> new NotFoundException("Unidade não encontrada para ser atualizada"));
 
         if (unitDto.name() != null) unit.setName(unitDto.name());
         if (unitDto.responsible_id() != null) {
@@ -63,6 +61,7 @@ public class UnitService {
         }
         if (unitDto.phone() != null) unit.setPhone(unitDto.phone());
         if (unitDto.email() != null) unit.setEmail(unitDto.email());
+        if (unitDto.active() != null) unit.setActive(unitDto.active());
 
         if (unitDto.address() != null) {
             AddressRequestDto a = unitDto.address();
@@ -77,27 +76,20 @@ public class UnitService {
             address.setComplement(a.complement());
 
         }
+
         return unitRepository.save(unit);
     }
 
     @Transactional
-    public void deleteUnit(UUID id) {
-        try {
-            Unit oldUnit = unitRepository.findById(id).orElseThrow(() -> new NotFoundException("Unidade não encontrada"));
-
-            if (oldUnit == null) {
-                throw new Exception("Não existe uma unidade com esse id: " + id + " para ser deletada.");
-            } else {
-                unitRepository.delete(oldUnit);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public Unit deleteUnit(UUID id) {
+        Unit unit = unitRepository.findById(id).orElseThrow(() -> new NotFoundException("Unidade não encontrada para ser deletada"));
+        unitRepository.delete(unit);
+        return unit;
     }
 
     public UnitStatsResponseDto getUnitStats() {
-        Long totalUnits = unitRepository.getCountUnits();
+        PreStatsUnitDto preStatsUnit = unitRepository.getCountUnits();
         UnitResponseDto unit = new UnitResponseDto(unitRepository.findLastInsert().orElseThrow(() -> new NotFoundException("Nenhuma Unidade adicionada!")));
-        return new UnitStatsResponseDto(totalUnits, unit);
+        return new UnitStatsResponseDto(preStatsUnit.totalUnits(), preStatsUnit.unitsActives(), preStatsUnit.unitsDeactivates(), unit);
     }
 }

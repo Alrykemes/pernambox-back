@@ -11,10 +11,11 @@ public record UserResponseDto(
         String cpf,
         String email,
         String phone,
-        boolean active,
+        Boolean active,
+        String imageProfileName,
         Role role
 ) {
     public UserResponseDto(User user) {
-        this(user.getId(), user.getName(), user.getCpf(), user.getEmail(), user.getPhone(), user.getActive(), user.getRole());
+        this(user.getId(), user.getName(), user.getCpf(), user.getEmail(), user.getPhone(), user.getActive(), user.getImageProfile(), user.getRole());
     }
 }

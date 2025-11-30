@@ -13,10 +13,11 @@ public record UnitResponseDto(
         UserResponseDto responsible,
         String phone,
         String email,
+        Boolean active,
         LocalDateTime createdAt,
         Address address
 ) {
     public UnitResponseDto(Unit unit) {
-        this(unit.getId(), unit.getName(), new UserResponseDto(unit.getResponsible()), unit.getPhone(), unit.getEmail(), unit.getCreatedAt(), unit.getAddress());
+        this(unit.getId(), unit.getName(), new UserResponseDto(unit.getResponsible()), unit.getPhone(), unit.getEmail(), unit.getActive(), unit.getCreatedAt(), unit.getAddress());
     }
 }

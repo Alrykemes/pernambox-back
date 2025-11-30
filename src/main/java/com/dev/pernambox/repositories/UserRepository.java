@@ -2,6 +2,7 @@ package com.dev.pernambox.repositories;
 
 import com.dev.pernambox.domain.user.User;
 import com.dev.pernambox.domain.user.dtos.StatsUsersResponseDto;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,12 +11,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByEmail(String email);
+
+    Optional<User> findById(UUID id);
 
     @Modifying
     @Transactional
@@ -35,7 +39,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
       )
       AND (
         (:onlyUsers = TRUE AND u.role = com.dev.pernambox.domain.user.enums.Role.USER)
-        OR (:onlyAdmins = TRUE AND u.role = com.dev.pernambox.domain.user.enums.Role.ADMIN)
+        OR (:onlyAdmins = TRUE AND u.role = com.dev.pernambox.domain.user.enums.Role.ADMIN
+                                AND u.role = com.dev.pernambox.domain.user.enums.Role.ADMIN_MASTER)
         OR (:onlyUsers = FALSE AND :onlyAdmins = FALSE)
       )
 """)
@@ -57,6 +62,16 @@ public interface UserRepository extends JpaRepository<User, UUID> {
                         FROM User u
             """)
     StatsUsersResponseDto getUsersStats();
+
+    @Query("""
+            SELECT u FROM User u WHERE u.role = "ADMIN_MASTER"
+            """)
+    List<User> getAllAdminsMasters();
+
+    @Query("""
+            SELECT u FROM User u WHERE u.role = "ADMIN"
+            """)
+    List<User> getAllAdmins();
 
     boolean existsByCpfEquals(String cpf);
 
