@@ -13,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
@@ -27,6 +28,22 @@ public class ProductController {
     @GetMapping()
     @Operation(summary = "Lista produtos", description = "Faz a listagem de todos os produtos ordenando pela data de validade")
     public ResponseEntity<List<ProductResponseDto>> findAll() { return ResponseEntity.ok(productService.findAllOrderedByValidity()); }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Atualiza um produto", description = "Atualiza um produto existente")
+    public ResponseEntity<ProductResponseDto> updateProduct(
+            @PathVariable UUID id,
+            @Valid @RequestBody ProductRequestDto productRequestDto) {
+
+        return ResponseEntity.ok(productService.updateProduct(id, productRequestDto));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Deleta um produto", description = "Remove um produto pelo ID")
+    public ResponseEntity<Void> deleteProduct(@PathVariable UUID id) {
+        productService.deleteProduct(id);
+        return ResponseEntity.noContent().build();
+    }
 
     @GetMapping("/refProduct")
     @Operation(summary = "Lista produtos base", description = "Faz a listagem de todos os produtos base")

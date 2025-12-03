@@ -30,12 +30,12 @@ public class Product {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ref_product_id", nullable = false)
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private RefProduct ref_product_id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "origin_id", nullable = false)
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Origin origin_id;
 
     public Product (ProductRequestDto dto){

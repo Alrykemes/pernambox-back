@@ -22,98 +22,112 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleGeneralException(Exception ex, HttpServletRequest request) {
-        StackTraceElement origin = ex.getStackTrace()[0];
-        log.error("Exception Não Tratada: {}, \n messagem: {} \n Classe: {} \n Método: {} \n Linha: {}",
-                ex.getClass(), ex.getMessage(), origin.getClass(), origin.getMethodName(), origin.getLineNumber());
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", ex.getMessage(), request);
+        log.error("Unhandled exception: {}", ex.getMessage(), ex);
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error",
+                "An unexpected error occurred.", request);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponseDto> handleTypeMismatch(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Invalid Type", ex.getMessage(), request);
+        log.error("Type mismatch: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Invalid Parameter Type",
+                "A parameter has an invalid type.", request);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handleValidationException(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        String message = ex.getBindingResult()
-                .getFieldErrors()
+
+        String message = ex.getBindingResult().getFieldErrors()
                 .stream()
                 .map(err -> err.getField() + ": " + err.getDefaultMessage())
                 .findFirst()
                 .orElse("Validation Error");
 
-        log.error("Validation Error: {}", message);
+        log.error("Validation error: {}", message);
 
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Validation Error", message, request);
     }
 
     @ExceptionHandler(AuthorizationException.class)
     public ResponseEntity<ErrorResponseDto> handleAuthorizationException(AuthorizationException ex, HttpServletRequest request) {
-        log.error("Authorization Error: {}", ex.getMessage());
-        return buildErrorResponse(HttpStatus.FORBIDDEN, "Authorization Error", ex.getMessage(), request);
+        log.error("Authorization error: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.FORBIDDEN, "Authorization Error",
+                ex.getMessage(), request);
     }
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponseDto> handleAuthenticationException(AuthenticationException ex, HttpServletRequest request) {
-        log.error("Authentication Error: {}", ex.getMessage());
-        return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Authentication Error", ex.getMessage(), request);
+        log.error("Authentication error: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Authentication Error",
+                ex.getMessage(), request);
     }
 
     @ExceptionHandler(PasswordResetException.class)
     public ResponseEntity<ErrorResponseDto> handlePasswordResetException(PasswordResetException ex, HttpServletRequest request) {
-        log.error("Password Reset Error: {}", ex.getMessage());
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Password Reset Error", ex.getMessage(), request);
+        log.error("Password reset error: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Password Reset Error",
+                ex.getMessage(), request);
     }
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handleNotFoundException(NotFoundException ex, HttpServletRequest request) {
-        log.error("Not Found in DB: {}", ex.getMessage());
-        return buildErrorResponse(HttpStatus.NOT_FOUND, "Not Found Error", ex.getMessage(), request);
+        log.error("Not found: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.NOT_FOUND, "Not Found", ex.getMessage(), request);
     }
 
     @ExceptionHandler(CreateEntityException.class)
-    public ResponseEntity<ErrorResponseDto> handleCreateEntityException(NotFoundException ex, HttpServletRequest request) {
-        log.error("Error to create in DB: {}", ex.getMessage());
-        return buildErrorResponse(HttpStatus.NOT_FOUND, "Create Entity error", ex.getMessage(), request);
+    public ResponseEntity<ErrorResponseDto> handleCreateEntityException(CreateEntityException ex, HttpServletRequest request) {
+        log.error("Create entity error: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, "Create Entity Error",
+                ex.getMessage(), request);
     }
 
     @ExceptionHandler(UpdateEntityException.class)
-    public ResponseEntity<ErrorResponseDto> handleUpdateEntityException(NotFoundException ex, HttpServletRequest request) {
-        log.error("Error to update in DB: {}", ex.getMessage());
-        return buildErrorResponse(HttpStatus.NOT_FOUND, "Update Entity Error", ex.getMessage(), request);
+    public ResponseEntity<ErrorResponseDto> handleUpdateEntityException(UpdateEntityException ex, HttpServletRequest request) {
+        log.error("Update entity error: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, "Update Entity Error",
+                ex.getMessage(), request);
     }
 
     @ExceptionHandler(DeleteEntityException.class)
-    public ResponseEntity<ErrorResponseDto> handleDeleteEntityException(NotFoundException ex, HttpServletRequest request) {
-        log.error("Error to delete in DB: {}", ex.getMessage());
-        return buildErrorResponse(HttpStatus.NOT_FOUND, "Delete Entity Error", ex.getMessage(), request);
+    public ResponseEntity<ErrorResponseDto> handleDeleteEntityException(DeleteEntityException ex, HttpServletRequest request) {
+        log.error("Delete entity error: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, "Delete Entity Error",
+                ex.getMessage(), request);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponseDto> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, HttpServletRequest request) {
-        log.error("Body error: {}", ex.getMessage());
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Body error", ex.getMessage(), request);
+        log.error("Unreadable body: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Malformed JSON Body",
+                "The request body is invalid or malformed.", request);
     }
 
     @ExceptionHandler(MinioException.class)
     public ResponseEntity<ErrorResponseDto> handleMinioException(MinioException ex, HttpServletRequest request) {
-        log.error("Minio Error: {}", ex.getMessage());
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Error to upload Files", ex.getMessage(), request);
+        log.error("MinIO error: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "File Upload Error",
+                "Error uploading file to storage.", request);
     }
 
     @ExceptionHandler(UploadFilesException.class)
     public ResponseEntity<ErrorResponseDto> handleUploadFilesException(UploadFilesException ex, HttpServletRequest request) {
-        log.error("Upload Files Error: {}", ex.getMessage());
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Error to upload Files", ex.getMessage(), request);
+        log.error("Upload error: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "File Upload Error",
+                ex.getMessage(), request);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponseDto> handleDataIntegrityViolationException(DataIntegrityViolationException ex, HttpServletRequest request) {
-        log.error("Violação de integridade de dados: {}", ex.getMessage());
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Erro ao criar/atualizar dados", ex.getMessage(), request);
+        log.error("Data integrity violation: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.CONFLICT, "Data Integrity Error",
+                "The operation violates database constraints.", request);
     }
 
     private ResponseEntity<ErrorResponseDto> buildErrorResponse(HttpStatus status, String title, String message, HttpServletRequest request) {
-        return ResponseEntity.status(status).body(new ErrorResponseDto(status.value(), title, message, request.getRequestURI(), LocalDateTime.now()));
+        return ResponseEntity.status(status).body(
+                new ErrorResponseDto(status.value(), title, message,
+                        request.getRequestURI(), LocalDateTime.now())
+        );
     }
 }
