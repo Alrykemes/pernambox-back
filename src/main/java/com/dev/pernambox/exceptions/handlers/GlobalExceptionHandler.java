@@ -22,9 +22,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleGeneralException(Exception ex, HttpServletRequest request) {
-        log.error("Unhandled exception: {}", ex.getMessage(), ex);
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error",
-                "An unexpected error occurred.", request);
+        StackTraceElement origin = ex.getStackTrace()[0];
+        log.error("Exception Não Tratada: {}, \n messagem: {} \n Classe: {} \n Método: {} \n Linha: {}",
+                ex.getClass(), ex.getMessage(), origin.getClass(), origin.getMethodName(), origin.getLineNumber());
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", ex.getMessage(), request);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
