@@ -3,8 +3,8 @@ services:
     image: postgres:16
     container_name: pernamboxDB
     restart: always
-    ports:
-      - '5432:5432'
+    expose:
+      - '5432'
     volumes:
       - pernambox_pgdata:/var/lib/postgresql/data
     environment:
@@ -16,8 +16,8 @@ services:
   redis:
     image: redis:7.2
     container_name: redis
-    ports:
-      - "6379:6379"
+    expose:
+      - "6379"
     command: [ "redis-server", "--appendonly", "yes" ] # persiste os dados
     environment:
       REDIS_HOST: ${REDIS_HOST}
@@ -37,12 +37,9 @@ services:
       - ./minio-data:/data
     networks:
       - pernambox-net
-    # Porta de acesso interna ("ports" em dev e "expose" em prod)
-    expose:
-      - "9000"
     ports:
+      # Acesso para portas "públicas", o minio esta com politica privada.
       - "9100:9000"
-#     Acesso ao minio front (opcional)
       - "9101:9001"
 
   prometheus:
@@ -118,8 +115,6 @@ services:
     container_name: backend
     ports:
       - "8080:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=prod
     restart: unless-stopped
     env_file:
       - .env
