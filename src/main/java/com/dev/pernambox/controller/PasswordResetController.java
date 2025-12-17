@@ -42,6 +42,8 @@ public class PasswordResetController {
     ) {
         User user = userService.getUserByEmail(body.email());
         String otpCode = redisService.generateOtpCode(user.getId());
+        System.out.println("UserId: " + user.getId());
+        System.out.println("OTP CODE: " + otpCode);
         emailService.sendEmail(body.email(), "Pernambox - Recuperação Senha", "Seu código de recuperação de senha: " + otpCode);
         return ResponseEntity.ok(new InitiatePasswordResetResponseDto(true, user.getId(), LocalTime.now().plusMinutes(15)));
     }
@@ -62,6 +64,8 @@ public class PasswordResetController {
         );
 
         redisService.insertPasswordResetToken(body.userId(), token);
+
+        System.out.println("Token: " + token);
 
         return ResponseEntity.ok(new VerifyOTPResponseDto(true, token));
     }

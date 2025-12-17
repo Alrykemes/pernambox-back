@@ -85,6 +85,10 @@ public class AuthController {
         }
 
         this.setRefreshTokenCookies(response, newToken, newRefreshToken.getExpirationDate());
+
+        System.out.println("Token de Acesso: " + accessToken);
+
+
         return ResponseEntity.ok(new LoginResponseDto(user, accessToken));
     }
 
